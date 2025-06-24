@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const {PrismaClient} =require("@prisma/client")
 import{ Request, Response, NextFunction} from "express";
 import { body, validationResult } from 'express-validator';
+import {loginCount, authSuccessCounter, errorCounter} from "../prisma/config/Monitor/monitor"
 import { 
 sendVerificationEmail, 
 sendWelcomeEmail,
@@ -13,6 +14,7 @@ const {otpLimiter,generateJWT}= require("../prisma/config/security");
 import jwt from "jsonwebtoken"
 import{initializeRedisClient} from "../prisma/config/redis"
 dotenv.config();
+
 
 interface LoginCred  {
         email:string;
@@ -414,8 +416,11 @@ const handleLoginError = (
 const login = async (req: Request, res: Response)=>{
 const {email,password, username}=req.body;
   try {
+	  loginCount.inc();
     const user = await authServiceLogin.loginUser({email, password, username});
-    
+    if (!user){
+    errorCounter.inc();
+    }
     
     const token = generateJWT({ userId: user.id,email:user.email })
     
@@ -442,9 +447,9 @@ maxAge: 15 * 60 * 1000,
 
 
 .status(200).json({    
-	success: true, 
+	success: authSuccessCounter.inc(), 
 	message: "Login Successful",
-        user:{
+	user:{
         id:user.id,
         email: user.email,
         username:user.username,
@@ -454,6 +459,7 @@ maxAge: 15 * 60 * 1000,
                        })
   }catch(error){
           if(error instanceof Error){
+		  errorCounter.inc()
   handleLoginError(error, res, {email,username})
   }
 }

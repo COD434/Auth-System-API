@@ -3,7 +3,9 @@ import Redis,{Redis as RedisClient}  from "ioredis"
 import {RateLimiterRedis ,RateLimiterMemory} from "rate-limiter-flexible";
 import {setupRedis} from "./redis"
 import {Request, Response, NextFunction} from "express"
+import {RatelimitsBlocked, RatelimitAllowed} from "./Monitor/monitor"
 dotenv.config()
+
 
 class TokenBucket{
 private redis: RedisClient
@@ -93,59 +95,29 @@ const {allowed, remaining, retryAfter}= await tokenBucket.consume(
 key,
 config.capacity,
 config.refillRate
-);
+)
 res.set({
 "X-RateLimit-Limit": config.capacity.toString(),
 "X-RateLimit-Remaining":remaining.toString(),
 ...(!allowed && {"Retry-After": retryAfter?.toString() || "1"})
 })
- allowed ? next() : res.status(429).json({
-error:`Too many requests. Try again in ${retryAfter}s`
-  })
+// allowed ? next() : res.status(429).json({
+//error:`Too many requests. Try again in ${retryAfter}s`
+  //})
+if(allowed){
+RatelimitAllowed.inc();
+return next();
+}else{
+RatelimitsBlocked.inc();
+res.status(429).json({
+error:`Too many requests`
+ })
+}
+  RatelimitsBlocked.inc();
  }
 }
 
-//const setupRateLimiter = async (config: RateLimiterConfig):Promise<RateLimiterRedis> =>{
-//if (!redisClient){
-//throw new Error("Redis clients not initialized")
-//}i
-//c/onsole.log(`Setting up rate limiter for ${config.keyPrefix}`)
-//return new RateLimiterRedis({
-//storeClient: redisClient,
-//keyPrefix:config.keyPrefix,
-//sendCommand:async (...args: string[])=> redisClient.call(...args),
-//blockDuration: config.blockDuration,
-//p/oints: config.points,
-//duration:config.duration,
-//inMemoryBlockOnConsumed:config.inMemoryBlockOnConsumed,
-//}///)
-//}
 
-//const rateLimiterMiddleware = (limiter: RateLimiterRedis | null, config: RateLimiterConfig) =>
-  //async (req: Request, res: Response, next: NextFunction) => {
-    //if (!limiter) {
-     // console.error("Rate limiter not initialized");
-  //    return next(new Error("Rate limiter not ready"));
-   // }
-
-    
-      //const key = config.keyGenerator(req);
-      //if (!key || key.endsWith("_")) {
-        //console.error("Invalid rate limit key generated:", key);
-        // return next(new Error("Invalid request key"));
-      //}
-    //try{  console.log(`Rate limiting key: ${key}`);
-      //await limiter.consume(key); 
-      //next();
-    //} catch (err: any) {
-      //const msBeforeNext = err.msBeforeNext ?? 0;
-      ///const retryAfter = msBeforeNext > 0 ? Math.ceil(msBeforeNext / 1000) : 60;
-      //console.error(`Rate limit exceeded for key ${config.keyPrefix}:${key}`);
-    //  const error = new Error(`Too many request! Try again in ${retryAfter} seconds`)
-      //const error = 429;
-     // return next();
-   // }
- // };
 const RATE_LIMIT_CONFIGS= {
 	OTP:{
 	keyPrefix:"otp_limiter",
@@ -167,19 +139,11 @@ const RATE_LIMIT_CONFIGS= {
 	}
 };
 
-//let otpLimiter: RateLimiterRedis
-//let loginLimiter:RateLimiterRedis
 initializeRateLimiter().catch((err) => {
   console.error("Failed to initialize rate limiters:", err);
   process.exit(1);
 })
 
-//(async()=>{
-//const{redisClient: client} = await setupRedis();
-//redisClient = client;
-//otpLimiter = await setupRateLimiter(RATE_LIMIT_CONFIGS.OTP);
-//loginLimiter = await setupRateLimiter(RATE_LIMIT_CONFIGS.LOGIN);
-//})();
 
 export const OTPLimiterMiddleware = () =>createRatelimiter(RATE_LIMIT_CONFIGS.OTP);
 export const LoginLimiterMiddleware = () => createRatelimiter(RATE_LIMIT_CONFIGS.LOGIN);

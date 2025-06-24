@@ -1,6 +1,13 @@
 require("dotenv").config();
 delete require.cache[require.resolve("./prisma/config/redis")];
 delete require.cache[require.resolve("./prisma/config/session")];
+import {initializeRedisClient} from "./prisma/config/redis"
+import{loginCount, 
+	errorCounter,
+	redisOps,
+	authSuccessCounter, 
+	businessKPI} from './prisma/config/Monitor/monitor';
+import {Metrics} from "./prisma/config/Monitor/monitor"
 import express from "express";
 import path from "path"
 import { Request, Response,NextFunction } from "express"
@@ -13,6 +20,7 @@ import { connectDB } from "./prisma/config/validate";
 import {authenticateJWT} from "./prisma/config/jwtAuth"
 import { securityHeaders } from "./prisma/config/security";
 import { createPassportConfig } from "./Controllers/passportContrller";
+import {swaggerSpec, swaggerUihandler} from "./prisma/config/swagger";
 import {register,
         login,
         //verifyEmail,
@@ -27,20 +35,59 @@ import {router} from "./routes/userrouter";
 import cookieParser from "cookie-parser"
 import {initializeRateLimiter,OTPLimiterMiddleware,LoginLimiterMiddleware} from "./prisma/config/OTPlimit";
 
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     summary: Login a user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *       401:
+ *         description: Invalid credentials
+ */ 
 
 
 const app = express();
-
+const activeUsers = async() =>{
+const redisClient = await initializeRedisClient();
+const keys = await redisClient.keys("session:*")
+return keys.length
+}
+const KPI = async()=>{
+const count =await activeUsers();
+businessKPI.set(count);
+}
 // Database connection
 connectDB();
 seedAdmin();
+loginCount.inc();
+errorCounter.inc();
+redisOps.inc();
+authSuccessCounter.inc();
+setInterval(KPI,30000);
 
 // View engine setup
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(securityHeaders)
-
+app.use("/api-docs",swaggerUihandler.serve,swaggerUihandler.setup(swaggerSpec))
 
 app.use((req: Request ,res:Response, next:NextFunction)=>{
 req.setTimeout(1000,()=>{
@@ -88,7 +135,8 @@ const { redisStore } = await setupRedis();
   //app.get("/verify-email",verifyEmail );
 app.get("/profile",authenticateJWT,(req ,res)=>{
   res.json({message: "Secure domain", user:req.user})
-  })  
+  })
+  app.get("/metrics",Metrics)
 
 interface ErrorWithStatus extends Error{
 status?: number;
@@ -123,7 +171,7 @@ app.get(/(.*)/,(req,res)=>{
    });
   });
   // Start server
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });

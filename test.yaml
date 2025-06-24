@@ -1,8 +1,8 @@
 config:
-  target: "http://localhost:3000"
+  target: "http://localhost:5000"
   phases:
-  - duration: 10
-    arrivalRate: 5
+  - duration: 5
+    arrivalRate: 50
     http:
       followRedirects: false
     defaults:
@@ -15,7 +15,6 @@ scenarios:
       - post:
            url: "/login"
            json:
-             username: "{{ testuser }}"
-             password: "{{ 20000812Hunnids#@ }}"
-             email: "{{ seeisakarabo1@gmail.com }}"
-           
+             username: "tester"
+             email: "johnDoe2@gmail.com"
+             password: "12343Hunfjjfj#@"
