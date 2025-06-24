@@ -1,0 +1,165 @@
+{
+	"info": {
+		"_postman_id": "696faedb-4628-4af7-aed8-0d48c05f854f",
+		"name": "Secure JWT API - Rate Limiting & Monitoring",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45315828"
+	},
+	"item": [
+		{
+			"name": "http://localhost:5000/login",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MjEwNmFlNC0zZTFhLTQ5YWItYjE4YS00NzBlZWZiY2YxZTIiLCJlbWFpbCI6InNlZWlzYWthcmFibzFAZ21haWwuY29tIiwiaWF0IjoxNzQ4MzMyMjE0LCJleHAiOjE3NDgzMzU4MTR9.T2PGpewW1w06S4lV79QKwrSx3zJSCVfVmBlr4HyvLDM",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"tester\",\n    \"email\": \"seeisakarabo461@gmail.com\",\n    \"password\": \"12343Hunnids#@\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:5000/api/auth/admin/whitelist/add",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyMGY3MWM4Yy1kZjUxLTRhZTItYWQ2NC0yY2ZkNWQzNzcwNTYiLCJlbWFpbCI6InNlZWlzYWthcmFibzFAZ21haWwuY29tIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NDkxNDI1MjUsImV4cCI6MTc0OTE0MzQyNX0.kZUoGECEQ850noIenoYiNe-0h5YYjAxY5RGwL15vpIQ",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ip\":\"192.168.1.100\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/auth/admin/whitelist/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"auth",
+						"admin",
+						"whitelist",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:5000/register",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyMGY3MWM4Yy1kZjUxLTRhZTItYWQ2NC0yY2ZkNWQzNzcwNTYiLCJlbWFpbCI6InNlZWlzYWthcmFibzFAZ21haWwuY29tIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NDk2NDQ0NDcsImV4cCI6MTc0OTY0NTM0N30.mHaa3ErgCgz8wKNTUqPGj8L4mDZ6uajjYX-4hK7_uDQ",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"seeisakarabo461@gmail.com\",\n    \"username\": \"tester\",\n    \"password\": \"12343Hunnids#@\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:5000/login",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MjEwNmFlNC0zZTFhLTQ5YWItYjE4YS00NzBlZWZiY2YxZTIiLCJlbWFpbCI6InNlZWlzYWthcmFibzFAZ21haWwuY29tIiwiaWF0IjoxNzQ4MzMyMjE0LCJleHAiOjE3NDgzMzU4MTR9.T2PGpewW1w06S4lV79QKwrSx3zJSCVfVmBlr4HyvLDM",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"admin\",\n    \"email\": \"admin3@gmail.com\",\n    \"password\": \"4444Hunnids#@\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
