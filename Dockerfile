@@ -1,0 +1,15 @@
+FROM node:18-alpine
+
+WORKDIR /API
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+RUN npx prisma generate
+RUN npm run build || cat /root/.npm/_logs/* || true
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
