@@ -1,0 +1,125 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LoginLimiterMiddleware = exports.OTPLimiterMiddleware = exports.initializeRateLimiter = void 0;
+const dotenv_1 = __importDefault(require("dotenv"));
+const redis_1 = require("./redis");
+const monitor_1 = require("./Monitor/monitor");
+dotenv_1.default.config();
+class TokenBucket {
+    constructor(redisClient) {
+        this.redis = redisClient;
+    }
+    async consume(key, capacity, refillRate) {
+        const now = Date.now();
+        const results = await this.redis
+            .pipeline()
+            .hgetall(`rate_limit:${key}`)
+            .exec();
+        const bucket = results[0][1]
+            || {};
+        const currentToken = parseFloat(bucket.tokens || capacity.toString());
+        const lastRefill = parseFloat(bucket.lastRefill || now.toString());
+        const timeElapsed = (now - lastRefill) / 1000;
+        const newToken = Math.min(capacity, currentToken + (timeElapsed * refillRate));
+        if (newToken < 1) {
+            return {
+                allowed: false,
+                remaining: Math.floor(newToken),
+                retryAfter: Math.ceil((1 - newToken) / refillRate)
+            };
+        }
+        await this.redis.hset(`rate_limit:${key}`, {
+            tokens: (newToken - 1).toString(),
+            lastRefill: now.toString()
+        });
+        return { allowed: true, remaining: Math.floor(newToken - 1) };
+    }
+}
+let tokenBucket;
+//in//terface RateLimiterConfig{
+//	 keyPrefix:string;
+//	 duration:number;
+//	 points:number;
+//	 blockDuration:number;
+//	 inMemoryBlockOnConsumed:number;
+//	 keyGenerator:(req: Request) => string
+//}
+//i/nterface RateLimitSessionData{
+//	retryAfter:number;
+//	message:string;
+//}
+//
+//const redisClientPromise = setupRedis();
+//let redisClient:RedisClient | null = null;
+//let otpLimiter: RateLimiterRedis | null = null;
+//let loginLimiter: RateLimiterRedis | null = null
+//redisClientPromise.then(({redisClient: client })=>{
+//r/edisClient = client;
+///}).catch(err => console.error("Redis setup error",err))
+//const initializeRateLimiters = async () => {
+//try {
+//redisClient = (await setupRedis()).redisClient;
+///otpLimiter = await setupRateLimiter(RATE_LIMIT_CONFIGS.OTP);
+//loginLimiter = await setupRateLimiter(RATE_LIMIT_CONFIGS.LOGIN);
+//} catch (err) {
+//  console.error("Redis setup error:", err);
+//throw new Error("Failed to initialize rate limiters");
+//}
+//}
+const initializeRateLimiter = async () => {
+    const redisClient = (await (0, redis_1.setupRedis)()).redisClient;
+    tokenBucket = new TokenBucket(redisClient);
+};
+exports.initializeRateLimiter = initializeRateLimiter;
+const createRatelimiter = (config) => {
+    return async (req, res, next) => {
+        const key = config.keyGenerator(req);
+        const { allowed, remaining, retryAfter } = await tokenBucket.consume(key, config.capacity, config.refillRate);
+        res.set(Object.assign({ "X-RateLimit-Limit": config.capacity.toString(), "X-RateLimit-Remaining": remaining.toString() }, (!allowed && { "Retry-After": (retryAfter === null || retryAfter === void 0 ? void 0 : retryAfter.toString()) || "1" })));
+        // allowed ? next() : res.status(429).json({
+        //error:`Too many requests. Try again in ${retryAfter}s`
+        //})
+        if (allowed) {
+            monitor_1.RatelimitAllowed.inc();
+            return next();
+        }
+        else {
+            monitor_1.RatelimitsBlocked.inc();
+            res.status(429).json({
+                error: `Too many requests`
+            });
+        }
+        monitor_1.RatelimitsBlocked.inc();
+    };
+};
+const RATE_LIMIT_CONFIGS = {
+    OTP: {
+        keyPrefix: "otp_limiter",
+        refillRate: 0.1,
+        capacity: 3,
+        keyGenerator: (req) => {
+            var _a;
+            const email = (_a = req.body) === null || _a === void 0 ? void 0 : _a.email;
+            if (!email)
+                return "";
+            return `${req.ip}_${email}`;
+        }
+    },
+    LOGIN: {
+        keyPrefix: "login_limiter",
+        capacity: 10,
+        refillRate: 2,
+        keyGenerator: (req) => req.ip || "unknown"
+    }
+};
+(0, exports.initializeRateLimiter)().catch((err) => {
+    console.error("Failed to initialize rate limiters:", err);
+    process.exit(1);
+});
+const OTPLimiterMiddleware = () => createRatelimiter(RATE_LIMIT_CONFIGS.OTP);
+exports.OTPLimiterMiddleware = OTPLimiterMiddleware;
+const LoginLimiterMiddleware = () => createRatelimiter(RATE_LIMIT_CONFIGS.LOGIN);
+exports.LoginLimiterMiddleware = LoginLimiterMiddleware;

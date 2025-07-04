@@ -1,4 +1,4 @@
-
+import {execSync} from "child_process";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({
@@ -11,6 +11,20 @@ log:[
 
 
 export type PrismaClientType = typeof prisma;
+
+const runMigration = async () =>{
+try{
+const migrationStatus = execSync('npx prisma migrate status').toString();
+
+if (!migrationStatus.includes('Database schema  is up to date')){
+console.log('Running database migrations...');
+execSync('npx prisma migrate deploy',{stdio:'inherit'})
+   }
+  }catch(err){
+console.error('migration  failed:',err)
+process.exit(1);
+ }
+}
 
 const connectDB = async (): Promise<void> => {
 try{

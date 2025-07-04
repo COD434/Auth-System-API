@@ -3,7 +3,6 @@ import helmet from  "helmet";
 import Redis from "ioredis"
 import {RateLimiterRedis} from "rate-limiter-flexible";
 import csrf from "csurf";                                                   
-import CIDR from "ip-cidr";
 import jwt from "jsonwebtoken";
 dotenv.config();
 const IP_EXPIRATION_SECONDS = 7 * 24 * 60 * 60;
@@ -61,6 +60,7 @@ if(entry === ip || ip === "::1" || ip === "127.0.0.1"){
 return true
 }
 if(entry.includes("/")){
+const CIDR = (await import("ip-cidr")).default;
 const cidr = new CIDR(entry);
 if (cidr.contains(ip))return true
 }

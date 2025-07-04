@@ -29,8 +29,8 @@ storeOptions?:Partial<RedisStoreOptions>;
 let redisClientInstance:RedisCon | null = null
 
 const DEFAULT_REDIS_CONFIG: RedisConfig = {
-host:"127.0.0.1",
-port: 6380,
+host:process.env.REDIS_HOST ||"redis",
+port: 6379,
 maxRetriesPerRequest: 10,
 connectTimeout: 5000
 }
