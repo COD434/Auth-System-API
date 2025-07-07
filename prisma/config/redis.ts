@@ -9,9 +9,9 @@ dotenv.config();
 
 interface RedisConfig{
 url?: string;
-host?: string;
+host?: string 
 port?: number;
-//password?: string;
+password?: string;
 maxRetriesPerRequest?:number;
 connectTimeout: number;
 }
@@ -29,8 +29,9 @@ storeOptions?:Partial<RedisStoreOptions>;
 let redisClientInstance:RedisCon | null = null
 
 const DEFAULT_REDIS_CONFIG: RedisConfig = {
-host:process.env.REDIS_HOST ||"redis",
-port: 6379,
+host:process.env.REDIS_HOST ?? "redis",
+port: Number(process.env.REDIS_PORT ?? "6379"),
+password:process.env.REDIS_PASSWORD,
 maxRetriesPerRequest: 10,
 connectTimeout: 5000
 }
@@ -49,17 +50,22 @@ const validateRedisConfig = (config:RedisConfig) => {
     throw new Error("Redis URL must use 'redis://' protocol");
   }
 
-  if (config.port && (config.port < 1 || config.port > 65535)) {
-    throw new Error("Invalid Redis port number");
-  }
+//  if (config.port && (config.port < 1 || config.port > 65535)) {
+  //  throw new Error("Invalid Redis port number");
+  //}
 };
 
-const getRedisConfig = (options?:Partial<RedisConfig>): RedisConfig => {
-  const config: RedisConfig = {
+const getRedisConfig = (options?:Partial<RedisConfig>):  RedisConfig => {
+ const port = options?.port ?
+	 Number(options.port) :
+	 process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : 
+	 Number(DEFAULT_REDIS_CONFIG.port);
+
+	const config: RedisConfig = {
 ...DEFAULT_REDIS_CONFIG,	  
-    host: process.env.REDIS_HOST || DEFAULT_REDIS_CONFIG.host,
-    port: parseInt(process.env.REDIS_PORT || "6380") ,
-//    password: process.env.REDIS_PASSWORD,
+    host: options?.host || process.env.REDIS_HOST|| DEFAULT_REDIS_CONFIG.host,
+    port: port,
+    password: options?.password || process.env.REDIS_PASSWORD|| undefined,
     ...options
   };
 
@@ -67,7 +73,7 @@ const getRedisConfig = (options?:Partial<RedisConfig>): RedisConfig => {
   return config;
 };
 
-const setupRedis = async (options?:SetupRedisOptions) => {
+const setupRedis = async (options?: SetupRedisOptions) => {
   try {
 	  //if(redisClient && redisStore){
 	  //return{redisClient,redisStore};
@@ -76,10 +82,10 @@ const setupRedis = async (options?:SetupRedisOptions) => {
 	  const storeOptions = {...DEFAULT_STORE_OPTIONS, ...options?.storeOptions}
     
     const redisClient = new Redis({
-    host: config.host,
-    port: config.port,
-   // password :config.password,
-    retryStrategy:(times)=> Math.min(times * 50,2000),
+    host: config.host as string,
+    port:Number(config.port) ,
+    password :config.password,
+    retryStrategy:(times:number)=> Math.min(times * 50,2000),
     maxRetriesPerRequest:config.maxRetriesPerRequest
     });
 
@@ -117,7 +123,7 @@ const setupRedis = async (options?:SetupRedisOptions) => {
       console.log("Redis client reconnecting...");
     });
 
-    return { redisClient, redisStore };
+    return{ redisClient, redisStore };
   } catch (error) {
     console.error("Redis setup failed:", error);
     throw error; 
