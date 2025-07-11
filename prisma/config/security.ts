@@ -36,10 +36,11 @@ jwt.verify(token, JWT_SECRET);
 
 const redisClient = new Redis({
 host:process.env.REDIS_HOST,
-port:parseInt(process.env.REDIS_PORT || "6380"),
+port:Number(process.env.REDIS_PORT),
 enableOfflineQueue: false,
 retryStrategy:(times)=> Math.min(times * 50, 2000),
-maxRetriesPerRequest:10
+maxRetriesPerRequest:10,
+password:process.env.REDIS_PASSWORD
 });
 const WHITELIST_KEY = process.env.WHITELIST_KEY
 export const dynamicWhiteList={
