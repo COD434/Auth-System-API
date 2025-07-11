@@ -68,7 +68,6 @@ const getRedisConfig = (options?:Partial<RedisConfig>):  RedisConfig => {
     password: options?.password || process.env.REDIS_PASSWORD|| undefined,
     ...options
   };
-
   validateRedisConfig(config);
   return config;
 };
