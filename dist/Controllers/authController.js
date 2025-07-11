@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.vAL = exports.Lvalidations = exports.userValidations = exports.verifyResetOTP = exports.requestPassword = exports.login = exports.register = exports.requireAdmin = exports.UpdatePassword = void 0;
+exports.vAL = exports.Lvalidations = exports.userValidations = exports.verifyResetOTP = exports.requestPassword = exports.login = exports.register = exports.requireAdmin = exports.VerificationOfEmail = exports.UpdatePassword = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const bcrypt = require("bcrypt");
 const { PrismaClient } = require("@prisma/client");
@@ -349,7 +349,7 @@ const createEmailVerificationService = (prisma, options = {}) => {
         },
     };
 };
-const createVerificationErrorHandler = (options) => {
+const VerificationOfEmail = (options) => {
     const { missingTokenMessage = "Invalid verification links", invalidTokenMessage = "Invalid or Expired verifcation link", defaultErrorMessage = "Email verification failed" } = options || {};
     const emailVerificationService = createEmailVerificationService(validate_1.prisma, { tokenExpirationCheck: process.env.NODE_ENV !== "test",
         postVerificationUpdate: async (userId) => {
@@ -373,13 +373,11 @@ const createVerificationErrorHandler = (options) => {
                 res.status(400).json({ message: "Expired link" });
                 break;
             default:
-                res.status(500).json({ message: "Verification failed"
-                });
+                res.status(500).json({ message: "Verification failed" });
         }
         ;
     };
-    return handleVerificationError;
-    const verifyEmail = async (req, res, next) => {
+    return async (req, res, next) => {
         const { token } = req.query;
         try {
             await emailVerificationService.verifyEmailToken(token);
@@ -396,6 +394,7 @@ const createVerificationErrorHandler = (options) => {
         }
     };
 };
+exports.VerificationOfEmail = VerificationOfEmail;
 const requireAdmin = (req, res, next) => {
     const authHeader = req.headers.authorization || req.cookies.token;
     if (!authHeader) {

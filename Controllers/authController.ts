@@ -502,7 +502,7 @@ const createEmailVerificationService=(
 	}
 }
 		 
-const createVerificationErrorHandler =  (options?:VerificationErrorOptions)=>{
+export const VerificationOfEmail =  (options?:VerificationErrorOptions)=>{
 		const{
 		missingTokenMessage="Invalid verification links",
 		invalidTokenMessage="Invalid or Expired verifcation link",
@@ -532,14 +532,10 @@ const handleVerificationError = (error: Error, res: Response): void => {
       res.status(400).json({ message: "Expired link" });
       break;
     default:
-      res.status(500).json({ message: "Verification failed" 
-    });
+      res.status(500).json({ message: "Verification failed"});
   };
 };
-return handleVerificationError;
-
-
-const verifyEmail = async (req:Request, res:Response , next:NextFunction)=> {
+return  async (req:Request, res:Response , next:NextFunction)=> {
 const {token}= req.query as {token: string}
 
 	try{
@@ -590,7 +586,6 @@ requestPassword,
 verifyResetOTP,
 userValidations,
 Lvalidations,
-vAL,
-//verifyEmail
+vAL
 };
 

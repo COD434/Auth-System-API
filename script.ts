@@ -23,7 +23,6 @@ import { createPassportConfig } from "./Controllers/passportContrller";
 import {swaggerSpec, swaggerUihandler} from "./prisma/config/swagger";
 import {register,
         login,
-        //verifyEmail,
         verifyResetOTP,
         UpdatePassword,
         userValidations,
@@ -82,7 +81,6 @@ redisOps.inc();
 authSuccessCounter.inc();
 setInterval(KPI,30000);
 
-// View engine setup
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
@@ -111,19 +109,12 @@ async function initializeApp () {
   try{
 await connectDB
 const { redisStore } = await setupRedis();
-//const sessionConfig = await getSessionConfig();
 
-//app.use(session({
-//...sessionConfig,
-//store: redisStore
-//}));
+
   await initializeRateLimiter()
-  // Passport initialization
-  
-  //app.use(passport.initialize());
-  //app.use(passport.session());
 
-  // Routes
+
+
   app.use("/api/auth", router);
   
   // Auth routes
@@ -132,10 +123,6 @@ const { redisStore } = await setupRedis();
   app.post("/update-password",UpdatePassword   as express.RequestHandler )
   app.post("/register",Lvalidations,vAL as express.RequestHandler, register  as express.RequestHandler );
   app.post("/login", vAL as express.RequestHandler,LoginLimiterMiddleware() ,login );
-  //app.get("/verify-email",verifyEmail );
-app.get("/profile",authenticateJWT,(req ,res)=>{
-  res.json({message: "Secure domain", user:req.user})
-  })
   app.get("/metrics",Metrics)
 
 interface ErrorWithStatus extends Error{

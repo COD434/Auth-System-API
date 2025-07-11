@@ -13,7 +13,6 @@ const express_1 = __importDefault(require("express"));
 const redis_2 = require("./prisma/config/redis");
 const admin_1 = require("./prisma/config/admin");
 const validate_1 = require("./prisma/config/validate");
-const jwtAuth_1 = require("./prisma/config/jwtAuth");
 const security_1 = require("./prisma/config/security");
 const swagger_1 = require("./prisma/config/swagger");
 const authController_1 = require("./Controllers/authController");
@@ -64,7 +63,6 @@ monitor_1.errorCounter.inc();
 monitor_1.redisOps.inc();
 monitor_1.authSuccessCounter.inc();
 setInterval(KPI, 30000);
-// View engine setup
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.urlencoded({ extended: true }));
@@ -91,16 +89,7 @@ async function initializeApp() {
     try {
         await validate_1.connectDB;
         const { redisStore } = await (0, redis_2.setupRedis)();
-        //const sessionConfig = await getSessionConfig();
-        //app.use(session({
-        //...sessionConfig,
-        //store: redisStore
-        //}));
         await (0, OTPlimit_1.initializeRateLimiter)();
-        // Passport initialization
-        //app.use(passport.initialize());
-        //app.use(passport.session());
-        // Routes
         app.use("/api/auth", userrouter_1.router);
         // Auth routes
         app.post("/request-password-reset", (0, OTPlimit_1.OTPLimiterMiddleware)(), authController_1.requestPassword);
@@ -108,10 +97,6 @@ async function initializeApp() {
         app.post("/update-password", authController_1.UpdatePassword);
         app.post("/register", authController_1.Lvalidations, authController_1.vAL, authController_1.register);
         app.post("/login", authController_1.vAL, (0, OTPlimit_1.LoginLimiterMiddleware)(), authController_1.login);
-        //app.get("/verify-email",verifyEmail );
-        app.get("/profile", jwtAuth_1.authenticateJWT, (req, res) => {
-            res.json({ message: "Secure domain", user: req.user });
-        });
         app.get("/metrics", monitor_2.Metrics);
         app.use((err, req, res, next) => {
             console.error(`Error: ${err.message}`, {

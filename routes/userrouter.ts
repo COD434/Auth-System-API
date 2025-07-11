@@ -8,7 +8,7 @@ import * as security from "../prisma/config/security"
 import {randomInt} from "crypto";
 import csrf from "csurf";
 import cookieParser from 'cookie-parser';
-import {requireAdmin} from "../Controllers/authController"
+import {requireAdmin, VerificationOfEmail} from "../Controllers/authController"
 import {authenticateJWT} from "../prisma/config/jwtAuth"
 import {refreshTokenController} from "../prisma/config/refresh"
 declare module "express-session"{
@@ -39,6 +39,6 @@ Promise.resolve(fn(req, res, next)).catch(next);
   router.post("/admin/whitelist/add",requireAdmin,authenticateJWT,adminController.addIP);
   router.post("/admin/whitelist/remove",requireAdmin,authenticateJWT,adminController.removeIP);
   router.get("/admin/whitelist/list",requireAdmin,authenticateJWT,adminController.listIP) 
-
+router.get("/verify-email",VerificationOfEmail())
 export  {router}
 	        
