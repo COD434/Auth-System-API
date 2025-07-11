@@ -24,7 +24,6 @@ Modern apps need security, observability, and scalability baked in from day one 
 - **Fast setup** for production-ready auth flows
 - **Rate limiting out of the box** for abuse prevention
 - **Redis integration** for real-time features and token management
-- **Open-core licensing**: use it for free, upgrade for advanced features
 
 ---
 
