@@ -26,7 +26,7 @@ services:
     image: redis:alpine
     container_name: redis
     ports:
-      - "6380:6380"
+      - "17214:17214"
 
   db:
     image: postgres:16-alpine
