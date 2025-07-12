@@ -40,7 +40,7 @@ You're building a SaaS app in **React**. Instead of building login, auth, and ra
 
 Installation
 
-git clone https://github.com/COD434/Auth-System-API
+git clone https://github.com/COD434/Auth-System-API <br>
 cd Auth-System-API
 cp .env
 docker-compose up --build
