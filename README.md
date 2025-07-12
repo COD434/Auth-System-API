@@ -49,5 +49,5 @@ docker-compose up --build
 
 Pull requests and discussions welcome! Please open an issue first to discuss major changes.
 
-Built with ❤️ by TheSBD
-Gitgub:COD434 / seeisakarabo2@gmail.com
+Built with ❤️ by TheSBD<br>
+Github:COD434 / seeisakarabo2@gmail.com
