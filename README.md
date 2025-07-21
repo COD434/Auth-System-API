@@ -1,4 +1,4 @@
-# 🔐 Auth-System-API
+# 🔐 Authenik8
 
 A secure, production-ready authentication and rate-limiting API built with Node.js, Express, Prisma, PostgreSQL, and Redis — designed to help developers build safe, scalable apps fast.
 
@@ -14,6 +14,7 @@ A secure, production-ready authentication and rate-limiting API built with Node.
 - 🧪 Admin seeding + role-based access control
 - 📊 Redis + API event monitoring (Grafana-ready)
 - ⚙️ Designed for containerized deployment (Docker + Railway)
+- 😷Anonymous guest-mode Auth
 
 ---
 
