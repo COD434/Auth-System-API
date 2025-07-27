@@ -7,6 +7,7 @@ require("dotenv").config();
 delete require.cache[require.resolve("./prisma/config/redis")];
 delete require.cache[require.resolve("./prisma/config/session")];
 const redis_1 = require("./prisma/config/redis");
+const Rabbitmq_1 = require("./prisma/config/Rabbitmq");
 const monitor_1 = require("./prisma/config/Monitor/monitor");
 const monitor_2 = require("./prisma/config/Monitor/monitor");
 const express_1 = __importDefault(require("express"));
@@ -16,7 +17,8 @@ const validate_1 = require("./prisma/config/validate");
 const security_1 = require("./prisma/config/security");
 const swagger_1 = require("./prisma/config/swagger");
 const authController_1 = require("./Controllers/authController");
-const userrouter_1 = require("./routes/userrouter");
+const express_async_handler_1 = __importDefault(require("express-async-handler"));
+const userrouter_1 = __importDefault(require("./routes/userrouter"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const OTPlimit_1 = require("./prisma/config/OTPlimit");
 /**
@@ -63,6 +65,7 @@ monitor_1.errorCounter.inc();
 monitor_1.redisOps.inc();
 monitor_1.authSuccessCounter.inc();
 setInterval(KPI, 30000);
+(0, Rabbitmq_1.initRabbitMq)();
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.urlencoded({ extended: true }));
@@ -90,13 +93,13 @@ async function initializeApp() {
         await validate_1.connectDB;
         const { redisStore } = await (0, redis_2.setupRedis)();
         await (0, OTPlimit_1.initializeRateLimiter)();
-        app.use("/api/auth", userrouter_1.router);
+        app.use("/api/auth", userrouter_1.default);
         // Auth routes
         app.post("/request-password-reset", (0, OTPlimit_1.OTPLimiterMiddleware)(), authController_1.requestPassword);
         app.post("/verify-reset-otp", authController_1.verifyResetOTP);
         app.post("/update-password", authController_1.UpdatePassword);
-        app.post("/register", authController_1.Lvalidations, authController_1.vAL, authController_1.register);
-        app.post("/login", authController_1.vAL, (0, OTPlimit_1.LoginLimiterMiddleware)(), authController_1.login);
+        app.post("/register", ...authController_1.userValidations, (0, express_async_handler_1.default)(authController_1.register));
+        app.post("/login", authController_1.Lvalidations, (0, OTPlimit_1.LoginLimiterMiddleware)(), authController_1.login);
         app.get("/metrics", monitor_2.Metrics);
         app.use((err, req, res, next) => {
             console.error(`Error: ${err.message}`, {

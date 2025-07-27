@@ -3,18 +3,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.vAL = exports.Lvalidations = exports.userValidations = exports.verifyResetOTP = exports.requestPassword = exports.login = exports.register = exports.requireAdmin = exports.VerificationOfEmail = exports.UpdatePassword = void 0;
+exports.vAL = exports.Lvalidations = exports.userValidations = exports.verifyResetOTP = exports.requestPassword = exports.login = exports.register = exports.requireAdmin = exports.VerificationOfEmail = exports.UpdatePassword = exports.Incognito = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
-const bcrypt = require("bcrypt");
+const bcrypt_1 = __importDefault(require("bcrypt"));
 const { PrismaClient } = require("@prisma/client");
 const express_validator_1 = require("express-validator");
 const monitor_1 = require("../prisma/config/Monitor/monitor");
 const email_1 = require("../prisma/config/email");
+const Rabbitmq_1 = require("../prisma/config/Rabbitmq");
 const validate_1 = require("../prisma/config/validate");
-const { otpLimiter, generateJWT } = require("../prisma/config/security");
+const security_1 = require("../prisma/config/security");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const monitor_2 = require("../prisma/config/Monitor/monitor");
 const redis_1 = require("../prisma/config/redis");
 dotenv_1.default.config();
+const jwtAuth_1 = require("../prisma/config/jwtAuth");
 ;
 const toMail = {
     sendVerificationEmail: email_1.sendVerificationEmail,
@@ -41,6 +44,24 @@ const createPasswordService = (prisma, mailService, options = {}) => {
         }
     };
 };
+//ANONYMOUS AUTH LOGIC
+const Incognito = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    let token = authHeader === null || authHeader === void 0 ? void 0 : authHeader.split(" ")[1];
+    let user = token ? (0, jwtAuth_1.verifyToken)(token) : null;
+    if (!user) {
+        const GToken = (0, jwtAuth_1.guestToken)();
+        user = (0, jwtAuth_1.verifyToken)(GToken);
+        res.setHeader("X-Guest-Token", GToken);
+        monitor_2.guestCounter.inc({ endpoint: req.path });
+    }
+    if ((user === null || user === void 0 ? void 0 : user.type) === "guest") {
+        monitor_2.guestBlocked.inc({ endpoint: req.path, method: req.method });
+    }
+    res.user = user;
+    next();
+};
+exports.Incognito = Incognito;
 const createPasswordErrorHandler = (options) => {
     const { userNotFoundMessage = "INVALID_CREDENTIALS", defaultErrorMessage = "ERROR_SENDING_OTP", successMessage = "Password reset OTP has been sent to your email" } = options || {};
     return (error, res, email) => {
@@ -104,7 +125,7 @@ const verifyResetOTP = async (req, res, next) => {
 exports.verifyResetOTP = verifyResetOTP;
 const UpdatePassword = async (req, res, next) => {
     const { email, password, otp } = req.body;
-    const hashed = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt_1.default.hash(password, 10);
     try {
         const user = await validate_1.prisma.user.findFirst({
             where: {
@@ -170,7 +191,7 @@ const Authservice = {
     async registerUser({ email, password, username, tokenExpiryHours = 24, bcryptRounds = 10 }) {
         const verifyToken = (0, email_1.genOTP)();
         const verifyExpires = new Date(Date.now() + tokenExpiryHours * 60 * 60 * 1000);
-        const hashedPassword = await bcrypt.hash(password, bcryptRounds);
+        const hashedPassword = await bcrypt_1.default.hash(password, bcryptRounds);
         const user = await validate_1.prisma.user.create({
             data: {
                 email,
@@ -181,20 +202,27 @@ const Authservice = {
                 verifyExpires
             }
         });
-        await (0, email_1.sendVerificationEmail)(email, verifyToken);
+        try {
+            await (0, Rabbitmq_1.publishToQueue)("emailQueue", { email, verifyToken });
+        }
+        catch (emailError) {
+            console.error("Email send failure:", emailError);
+            throw new Error("Failed to send verification email");
+        }
         return user;
-    },
+    }
 };
 const userValidations = registerValidations();
 exports.userValidations = userValidations;
 const register = async (req, res, next) => {
     const errors = (0, express_validator_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
             success: false,
             validationErrors: errors.array(),
             FormData: req.body
         });
+        return;
     }
     try {
         const { email, password, username } = req.body;
@@ -203,10 +231,11 @@ const register = async (req, res, next) => {
             success: true,
             message: "Registration successful! Please check your email to verify your account."
         });
+        console.log("sent  JSON response");
     }
     catch (err) {
         console.error("Registration error:", err);
-        return res.status(500).json({
+        res.json({
             success: false,
             message: "Registration failed. Please try again",
             formData: req.body
@@ -233,7 +262,7 @@ const loginValidations = ({ minUsernameLength = 5, requireUsername = false } = {
 const vAL = (req, res, next) => {
     const errors = (0, express_validator_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
             success: false,
             errors: errors.array()
         });
@@ -248,7 +277,7 @@ const authServiceLogin = {
         if (!user) {
             throw new Error("INVALID_EMAIL");
         }
-        const isValidPassword = await bcrypt.compare(password, user.password);
+        const isValidPassword = await bcrypt_1.default.compare(password, user.password);
         if (!isValidPassword) {
             throw new Error("INVALID_PASSWORD");
         }
@@ -291,7 +320,7 @@ const login = async (req, res) => {
         if (!user) {
             monitor_1.errorCounter.inc();
         }
-        const token = generateJWT({ userId: user.id, email: user.email });
+        const token = (0, security_1.generateJWT)({ userId: user.id, email: user.email });
         const redisClient = await (0, redis_1.initializeRedisClient)();
         const accessToken = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: "15m" });
         const refreshToken = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "7d" });

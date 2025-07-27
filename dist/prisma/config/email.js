@@ -1,51 +1,49 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendWelcomeEmail = exports.SendResetPasswordOTP = exports.genOTP = exports.sendVerificationEmail = exports.Token = void 0;
-require("dotenv").config();
 const client_1 = require("@prisma/client");
-const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const crypto_1 = __importDefault(require("crypto"));
+const nodemailer_1 = __importDefault(require("nodemailer"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    pool: true,
+const transporter = nodemailer_1.default.createTransport({
+    host: "smtp.ethereal.email",
+    //pool:true,
     port: 587,
     secure: false,
     auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
+        user: "garland44@ethereal.email",
+        pass: "MHqEAx79cwA1mMhHzB"
     }
 });
 const Token = () => {
-    return crypto.randomBytes(32).toString("hex");
+    return crypto_1.default.randomBytes(32).toString("hex");
 };
 exports.Token = Token;
 const sendVerificationEmail = async (email, token) => {
     try {
-        //const user =await prisma.user.findUnique({
-        //	where:{id:userId},
-        //select:{email:true, username: true}
-        //})
-        //if (!user || !user.email){
-        //throw new Error("User not found or missing email");
-        //}
         const verificationUrl = `${process.env.BASE_URL}/verify-email?token=${token}`;
         const mailOptions = {
-            from: ` "Karabo" <${process.env.GMAIL_USER}>`,
+            from: "Karabo", //<${process.env.GMAIL_USER}>,
             to: email,
-            subject: `Welcome, ${email}`,
+            subject: "Welcome",
             html: `
     <div style = "font-family: Arial,sans-serif;max-width: 600px; margin:0 auto">
     <h1>Thank you for try this out here's your  verification url ${verificationUrl}</h1>
     
     </div>`
         };
-        await transporter.sendMail(mailOptions);
-        console.log(`Verification email sent  to ${email}`);
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Verification email sent  to:", info.messageId);
+        console.log("Preview:", nodemailer_1.default.getTestMessageUrl(info));
     }
     catch (error) {
         console.error("Error sending verification email:", error);
-        throw error;
+        throw new Error("Error occured while sending verificaton:" + error.message);
     }
 };
 exports.sendVerificationEmail = sendVerificationEmail;

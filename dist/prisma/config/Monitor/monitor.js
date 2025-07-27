@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Metrics = exports.businessKPI = exports.authSuccessCounter = exports.redisOps = exports.errorCounter = exports.RatelimitsBlocked = exports.RatelimitAllowed = exports.loginCount = void 0;
+exports.Metrics = exports.businessKPI = exports.authSuccessCounter = exports.redisOps = exports.errorCounter = exports.guestBlocked = exports.guestCounter = exports.RatelimitsBlocked = exports.RatelimitAllowed = exports.loginCount = void 0;
 const prom_client_1 = __importDefault(require("prom-client"));
 const express_1 = __importDefault(require("express"));
 const app = (0, express_1.default)();
@@ -20,6 +20,16 @@ exports.RatelimitAllowed = new prom_client_1.default.Counter({
 exports.RatelimitsBlocked = new prom_client_1.default.Counter({
     name: "Login_Attempts_Blocked",
     help: "Total_number_of_requests_blocked"
+});
+exports.guestCounter = new prom_client_1.default.Counter({
+    name: "Guest_visited",
+    help: "Total_number_visited",
+    labelNames: ["endpoint"]
+});
+exports.guestBlocked = new prom_client_1.default.Counter({
+    name: "guests_Blocked",
+    help: "total_guests_blocked",
+    labelNames: ["endpoint", "method"]
 });
 exports.errorCounter = new prom_client_1.default.Counter({
     name: 'error_events_total',
@@ -44,6 +54,8 @@ register.registerMetric(exports.authSuccessCounter);
 register.registerMetric(exports.businessKPI);
 register.registerMetric(exports.RatelimitsBlocked);
 register.registerMetric(exports.RatelimitAllowed);
+register.registerMetric(exports.guestCounter);
+register.registerMetric(exports.guestBlocked);
 const Metrics = async (req, res) => {
     res.set("Content-Type", register.contentType);
     res.end(await register.metrics());
