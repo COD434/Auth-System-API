@@ -15,6 +15,7 @@ A secure, production-ready authentication and rate-limiting API built with Node.
 - 📊 Redis + API event monitoring (Grafana-ready)
 - ⚙️ Designed for containerized deployment (Docker + Railway)
 - 😷Anonymous guest-mode Auth
+- 🐰Email service queuing(RabbitMQ)
 
 ---
 
