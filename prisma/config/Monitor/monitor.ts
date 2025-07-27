@@ -18,6 +18,15 @@ export const RatelimitsBlocked = new client.Counter({
 name:"Login_Attempts_Blocked",
 help:"Total_number_of_requests_blocked"
 })
+export const guestCounter = new client.Counter({
+name:"Guest_visited",
+help:"Total_number_visited",
+labelNames:["endpoint"]
+})
+export const guestBlocked =new client.Counter({
+name:"guests_Blocked",
+help:"total_guests_blocked",
+labelNames:["endpoint","method"]})
 export const errorCounter = new client.Counter({
 name:'error_events_total',
 help:'Total number of error events'
@@ -41,7 +50,8 @@ register.registerMetric(authSuccessCounter);
 register.registerMetric(businessKPI)
 register.registerMetric(RatelimitsBlocked)
 register.registerMetric(RatelimitAllowed)
-
+register.registerMetric(guestCounter)
+register.registerMetric(guestBlocked)
 export const Metrics =async (req:any, res:any)=>{
 res.set("Content-Type",register.contentType);
 res.end(await register.metrics());

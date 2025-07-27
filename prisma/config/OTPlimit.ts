@@ -49,37 +49,6 @@ return {allowed:true ,remaining:Math.floor(newToken - 1)};
 let tokenBucket: TokenBucket;
 
 
-//in//terface RateLimiterConfig{
-//	 keyPrefix:string;
-//	 duration:number;
-//	 points:number;
-//	 blockDuration:number;
-//	 inMemoryBlockOnConsumed:number;
-//	 keyGenerator:(req: Request) => string
- //}
-//i/nterface RateLimitSessionData{
-//	retryAfter:number;
-//	message:string;
-//}
-//
-//const redisClientPromise = setupRedis();
-//let redisClient:RedisClient | null = null;
-//let otpLimiter: RateLimiterRedis | null = null;
-//let loginLimiter: RateLimiterRedis | null = null
-//redisClientPromise.then(({redisClient: client })=>{
-//r/edisClient = client;
-///}).catch(err => console.error("Redis setup error",err))
-
-//const initializeRateLimiters = async () => {
-  //try {
-    //redisClient = (await setupRedis()).redisClient;
-    ///otpLimiter = await setupRateLimiter(RATE_LIMIT_CONFIGS.OTP);
-    //loginLimiter = await setupRateLimiter(RATE_LIMIT_CONFIGS.LOGIN);
-  //} catch (err) {
-  //  console.error("Redis setup error:", err);
-    //throw new Error("Failed to initialize rate limiters");
-  //}
-//}
 export const initializeRateLimiter = async () => {
 const redisClient = (await setupRedis()).redisClient;
 tokenBucket = new TokenBucket(redisClient);
@@ -101,9 +70,6 @@ res.set({
 "X-RateLimit-Remaining":remaining.toString(),
 ...(!allowed && {"Retry-After": retryAfter?.toString() || "1"})
 })
-// allowed ? next() : res.status(429).json({
-//error:`Too many requests. Try again in ${retryAfter}s`
-  //})
 if(allowed){
 RatelimitAllowed.inc();
 return next();

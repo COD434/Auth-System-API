@@ -51,9 +51,6 @@ export const dynamicWhiteList={
 	    const keys = await redisClient.keys("whitelist:ip:*");
 	
 
-      //const cidrs = await redisClient.sismember("ip-whitelist",ip);
-      ///const isDirectMatch = cidrs.include(ip) || ip === "::1" || ip ==="217.0.0.1";
-//if(const key of keys) {
 
 for (const key of keys){
 const entry = key.replace("whitelist:ip:","");

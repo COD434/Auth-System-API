@@ -27,7 +27,6 @@ model User {
   resetExpires        DateTime?
   otp                 String?
   otpExpiration       DateTime @default(now())
-  phoneNumber         String?  @unique
 }
 enum Role{
   USER

@@ -2,6 +2,7 @@ require("dotenv").config();
 delete require.cache[require.resolve("./prisma/config/redis")];
 delete require.cache[require.resolve("./prisma/config/session")];
 import {initializeRedisClient} from "./prisma/config/redis"
+import {initRabbitMq} from "./prisma/config/Rabbitmq"
 import{loginCount, 
 	errorCounter,
 	redisOps,
@@ -16,6 +17,7 @@ import passport from "passport";
 import  {setupRedis} from "./prisma/config/redis";
 import { getSessionConfig } from "./prisma/config/session";
 import {seedAdmin} from "./prisma/config/admin"
+import{Incognito} from "./Controllers/authController"
 import { connectDB } from "./prisma/config/validate";
 import {authenticateJWT} from "./prisma/config/jwtAuth"
 import { securityHeaders } from "./prisma/config/security";
@@ -29,8 +31,9 @@ import {register,
         Lvalidations,
         vAL,
         requestPassword,
-} from "./Controllers/authController"
-import {router} from "./routes/userrouter";
+} from "./Controllers/authController";
+import asyncHandler from "express-async-handler";
+import router from "./routes/userrouter";
 import cookieParser from "cookie-parser"
 import {initializeRateLimiter,OTPLimiterMiddleware,LoginLimiterMiddleware} from "./prisma/config/OTPlimit";
 
@@ -80,6 +83,7 @@ errorCounter.inc();
 redisOps.inc();
 authSuccessCounter.inc();
 setInterval(KPI,30000);
+initRabbitMq()
 
 app.use(express.json());
 app.use(cookieParser());
@@ -121,9 +125,10 @@ const { redisStore } = await setupRedis();
   app.post("/request-password-reset",OTPLimiterMiddleware(),requestPassword as express.RequestHandler)
   app.post("/verify-reset-otp",verifyResetOTP as express.RequestHandler );
   app.post("/update-password",UpdatePassword   as express.RequestHandler )
-  app.post("/register",Lvalidations,vAL as express.RequestHandler, register  as express.RequestHandler );
-  app.post("/login", vAL as express.RequestHandler,LoginLimiterMiddleware() ,login );
-  app.get("/metrics",Metrics)
+  app.post("/register" ,...userValidations,asyncHandler(register)  );
+  app.post("/login",Lvalidations,LoginLimiterMiddleware() ,login as express.RequestHandler );
+app.get("/metrics",Metrics)
+//app.get("/Guest",Incognito)
 
 interface ErrorWithStatus extends Error{
 status?: number;

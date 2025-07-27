@@ -1,7 +1,9 @@
 import dotenv from "dotenv";
 import {Request, Response, NextFunction} from "express";
 import jwt from "jsonwebtoken";
-import {setupRedis} from "./redis"
+import {setupRedis} from "./redis";
+import {guestCounter, guestBlocked} from "./Monitor/monitor";
+import crypto from "crypto"
 dotenv.config();
 
 interface JwtPayload {
@@ -15,6 +17,28 @@ redisClientPromise.then(({redisClient: client}) =>{
 redisClient = client;
 }).catch (err => console.error("Redis setup error",err));
 
+
+const T_EXPIRY = "1d"
+export const guestToken = (): string =>{
+const Payload={
+type: "guest",
+id:crypto.randomUUID(),
+createdAt:Date.now
+  }
+  //if(guestToken()){
+  guestCounter.inc();
+  
+return jwt.sign(Payload,process.env.JWT_SECRET!,{expiresIn:T_EXPIRY});
+
+}
+
+export const verifyToken = (token:string): any | null=>{
+try{
+jwt.verify(token,process.env.JWT_SECRET!);
+}catch{
+return null;
+ }
+} 
 export const authenticateJWT = async(req:Request, res:Response, next:NextFunction): Promise<void> =>{
 
 

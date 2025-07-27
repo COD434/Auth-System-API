@@ -1,8 +1,8 @@
-require("dotenv").config();
 import {PrismaClient} from "@prisma/client";
-const crypto = require("crypto")
-const nodemailer = require("nodemailer")
-
+import crypto from "crypto"
+import nodemailer from "nodemailer"
+import dotenv from "dotenv"
+dotenv.config()
 
 const prisma = new PrismaClient();
 
@@ -13,13 +13,13 @@ interface MailOptions{
 	html:string
 }
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    pool:true,
+    host: "smtp.ethereal.email",
+    //pool:true,
     port:587,
     secure:false,
     auth:{
-        user:process.env.GMAIL_USER,
-        pass:process.env.GMAIL_APP_PASSWORD
+        user:"garland44@ethereal.email",
+        pass: "MHqEAx79cwA1mMhHzB"
     }
 })
 
@@ -29,19 +29,12 @@ export const Token = ()=>{
 
 export const sendVerificationEmail = async(email:string ,token:string):Promise<void> => {
 try{
-//const user =await prisma.user.findUnique({
-//	where:{id:userId},
-//select:{email:true, username: true}
-//})
-//if (!user || !user.email){
-//throw new Error("User not found or missing email");
-//}
 
 const verificationUrl = `${process.env.BASE_URL}/verify-email?token=${token}`
 const mailOptions={
-    from:` "Karabo" <${process.env.GMAIL_USER}>`,
+    from: "Karabo", //<${process.env.GMAIL_USER}>,
     to: email,
-    subject: `Welcome, ${email}`,
+    subject: "Welcome",
     html:`
     <div style = "font-family: Arial,sans-serif;max-width: 600px; margin:0 auto">
     <h1>Thank you for try this out here's your  verification url ${verificationUrl}</h1>
@@ -49,11 +42,12 @@ const mailOptions={
     </div>`
 };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Verification email sent  to ${email}`)
+   const info = await transporter.sendMail(mailOptions);
+    console.log("Verification email sent  to:", info.messageId);
+    console.log("Preview:",nodemailer.getTestMessageUrl(info));
 }catch(error){
     console.error("Error sending verification email:",error);
-    throw error
+    throw new Error("Error occured while sending verificaton:" + (error as Error).message);
 }
 };
 export const genOTP =()=>{
