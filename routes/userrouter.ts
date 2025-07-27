@@ -1,6 +1,6 @@
 import express from "express"
 import {SessionData} from "express-session"
-const router = express.Router();
+import {Router} from "express"
 import{Request, Response, NextFunction} from "express";
 import {adminController} from "../Controllers/whitelistContrller";
 import {dynamicWhiteList, verifyJWT} from "../prisma/config/security";
@@ -8,7 +8,7 @@ import * as security from "../prisma/config/security"
 import {randomInt} from "crypto";
 import csrf from "csurf";
 import cookieParser from 'cookie-parser';
-import {requireAdmin, VerificationOfEmail} from "../Controllers/authController"
+import {requireAdmin,Incognito, VerificationOfEmail} from "../Controllers/authController"
 import {authenticateJWT} from "../prisma/config/jwtAuth"
 import {refreshTokenController} from "../prisma/config/refresh"
 declare module "express-session"{
@@ -24,10 +24,11 @@ resetTime:Date;
    }
  }
 }
+const router = Router()
 router.use(cookieParser());
 
 
-const asyncHandler = (fn:(req:Request, res:Response, next:NextFunction)=>
+export const asyncHandler = (fn:(req:Request, res:Response, next:NextFunction)=>
 Promise<any>) => (req:Request, res:Response, next:NextFunction)=>{
 Promise.resolve(fn(req, res, next)).catch(next);
 }
@@ -40,5 +41,8 @@ Promise.resolve(fn(req, res, next)).catch(next);
   router.post("/admin/whitelist/remove",requireAdmin,authenticateJWT,adminController.removeIP);
   router.get("/admin/whitelist/list",requireAdmin,authenticateJWT,adminController.listIP) 
 router.get("/verify-email",VerificationOfEmail())
-export  {router}
+router.get("/guest",Incognito)
+
+
+export default router;
 	        

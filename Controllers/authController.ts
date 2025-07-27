@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
-const bcrypt = require("bcrypt");
-const {PrismaClient} =require("@prisma/client")
+import bcrypt  from "bcrypt";
+const {PrismaClient} = require ("@prisma/client")
 import{ Request, Response, NextFunction} from "express";
 import { body, validationResult } from 'express-validator';
 import {loginCount, authSuccessCounter, errorCounter} from "../prisma/config/Monitor/monitor"
@@ -9,11 +9,14 @@ sendVerificationEmail,
 sendWelcomeEmail,
 SendResetPasswordOTP,
 genOTP } from "../prisma/config/email";
+import {publishToQueue} from "../prisma/config/Rabbitmq"
 import {prisma} from "../prisma/config/validate" 
-const {otpLimiter,generateJWT}= require("../prisma/config/security");
-import jwt from "jsonwebtoken"
+import {generateJWT} from "../prisma/config/security";
+import jwt from "jsonwebtoken";
+import {guestCounter ,guestBlocked } from "../prisma/config/Monitor/monitor"
 import{initializeRedisClient} from "../prisma/config/redis"
 dotenv.config();
+import {verifyToken,guestToken}  from "../prisma/config/jwtAuth"
 
 
 interface LoginCred  {
@@ -119,6 +122,26 @@ await mailService.SendResetPasswordOTP(email, resetToken);
 return {email,  resetToken};
 }
 }
+}
+//ANONYMOUS AUTH LOGIC
+export const Incognito = (req:Request, res:Response, next:NextFunction)=>{
+const authHeader = req.headers.authorization;
+
+	let token = authHeader?.split(" ")[1];
+        let user = token? verifyToken(token) : null;
+
+if(!user){
+const GToken = guestToken();
+user = verifyToken(GToken);
+res.setHeader("X-Guest-Token",GToken);
+guestCounter.inc({endpoint:req.path});  
+
+}
+if(user?.type === "guest"){
+guestBlocked.inc({endpoint: req.path, method: req.method})
+}
+  (res as any).user = user;
+  next();
 }
 
 const createPasswordErrorHandler=(options?: PasswordResetErrorOptions)=> {
@@ -292,34 +315,47 @@ bcryptRounds = 10
 		verifyExpires
 		}
 	});
-	await sendVerificationEmail(email, verifyToken);
+
+	try{
+		await publishToQueue("emailQueue",{email,verifyToken});
+
+	}catch(emailError){
+	console.error("Email send failure:",emailError);
+	throw new Error("Failed to send verification email");
+	}
 	return user;
-},
+} 
 }
  const userValidations = registerValidations();
 
  const register = async (req:Request, res:Response ,next:NextFunction) => {
-  const errors = validationResult(req);
+
+	 const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({
+
+     
+	  res.status(400).json({
 	success:false,
       validationErrors: errors.array(),
       FormData: req.body
-    });
+    })
+			 
+	return;	
   }
 
   try {
     const { email, password, username } = req.body;
-    await Authservice.registerUser({email,password,username})
+     await Authservice.registerUser({email,password,username})
 
-      res.status(200).json({
+       res.status(200).json({
 	success:true,
         message: "Registration successful! Please check your email to verify your account."
-      });
-    
+      
+       });
+    console.log("sent  JSON response");
   } catch (err) {
     console.error("Registration error:", err);
-    return res.status(500).json({
+     res.json({
       success:false,
       message:  "Registration failed. Please try again" ,
       formData: req.body
@@ -350,7 +386,7 @@ body("username")
  const vAL =(req: Request, res:Response,next: NextFunction)=>{
     const errors= validationResult(req);
     if(!errors.isEmpty()){
-      return res.status(400).json({
+       res.status(400).json({
         success:false,
         errors:errors.array()
       })
