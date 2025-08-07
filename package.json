@@ -7,7 +7,7 @@
     "devStart": "nodemon script.ts",
     "start": "node dist/script.js",
     "GoGo": "node dist/prisma/config/emailConsumer.js",
-    "test": "mocha -r ts-node/register \"dist/tests/**/*.test.js\""
+    "test": "mocha -r ts-node/register \"tests/**/*.test.ts\""
   },
   "keywords": [],
   "author": "",
