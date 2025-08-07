@@ -42,7 +42,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const ioredis_1 = __importDefault(require("ioredis"));
 const rate_limiter_flexible_1 = require("rate-limiter-flexible");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-dotenv_1.default.config();
+dotenv_1.default.config({ path: ".env" });
 const IP_EXPIRATION_SECONDS = 7 * 24 * 60 * 60;
 const JWT_SECRET = process.env.JWT_SECRET || "Boo";
 const EXPIRY = "1h";
@@ -56,7 +56,7 @@ const redisClient = new ioredis_1.default({
     enableOfflineQueue: false,
     retryStrategy: (times) => Math.min(times * 50, 2000),
     maxRetriesPerRequest: 10,
-    password: process.env.REDIS_PASSWORD
+    //password:process.env.REDIS_PASSWORD
 });
 const WHITELIST_KEY = process.env.WHITELIST_KEY;
 exports.dynamicWhiteList = {

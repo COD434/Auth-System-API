@@ -14,7 +14,7 @@ const testEmail= "test0@email.com";
 
 describe("User Auth flow",()=>{
 const URL = "redis://localhost:6379"
-	const redis = new Redis(URL);
+	const redis = new Redis(process.env.REDIS_URL!);
 
 before(async()=>{
 await prisma.user.deleteMany()

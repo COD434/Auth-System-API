@@ -49,6 +49,7 @@ const expect = chai_1.default.expect;
 const testPassword = "SuperSecret123";
 const testEmail = "test0@email.com";
 describe("User Auth flow", () => {
+    const URL = "redis://localhost:6379";
     const redis = new ioredis_1.default(process.env.REDIS_URL);
     before(async () => {
         await validate_1.prisma.user.deleteMany();
