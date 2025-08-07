@@ -43,7 +43,7 @@ jobs:
     env:
       NODE_ENV: test
       DATABASE_URL: postgres://seeisa:karabo@localhost:5432/top_user_test
-      REDIS_HOST: redis-17214.c82.us-east-1-2.ec2.redns.redis-cloud.com
+      REDIS_URL: redis://default:GHgm4ESlua6hyUL7pD7grl8exlRZYzDt@redis-17214.c82.us-east-1-2.ec2.redns.redis-cloud.com:17214
       RABBITMQ_URL: amqp://rabbitmq
 
     steps:
