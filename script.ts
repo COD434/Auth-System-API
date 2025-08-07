@@ -30,8 +30,7 @@ import {register,
         userValidations,
         Lvalidations,
         vAL,
-        requestPassword,
-} from "./Controllers/authController";
+        requestPassword} from "./Controllers/authController";
 import asyncHandler from "express-async-handler";
 import router from "./routes/userrouter";
 import cookieParser from "cookie-parser"
@@ -83,7 +82,13 @@ errorCounter.inc();
 redisOps.inc();
 authSuccessCounter.inc();
 setInterval(KPI,30000);
-initRabbitMq()
+
+if(process.env.NODE_ENV !== "test"){
+initRabbitMq().catch((err)=>{
+console.error("failed to init Rabbit:",err)
+process.exit(1);
+})
+}
 
 app.use(express.json());
 app.use(cookieParser());
@@ -126,12 +131,12 @@ const { redisStore } = await setupRedis();
   app.post("/verify-reset-otp",verifyResetOTP as express.RequestHandler );
   app.post("/update-password",UpdatePassword   as express.RequestHandler )
   app.post("/register" ,...userValidations,asyncHandler(register)  );
-  app.post("/login",Lvalidations,LoginLimiterMiddleware() ,login as express.RequestHandler );
+  app.post("/login",LoginLimiterMiddleware,Lvalidations,login as express.RequestHandler );
 app.get("/metrics",Metrics)
-//app.get("/Guest",Incognito)
+
 
 interface ErrorWithStatus extends Error{
-status?: number;
+status?: number
 }
 
 app.use((err:ErrorWithStatus, req:Request, res:Response, next:NextFunction)=>{
@@ -153,15 +158,15 @@ res.status(404).json({error: "Route not found"})
   
   
 
-app.get(/(.*)/,(req,res)=>{
-  res.status(404).json({
-  actualUrlHit: req.url,
-  method: req.method,
-  availableRoutes:["POST /login",
-  "POST /register",
-  "GET /debug" ]
-   });
-  });
+//app.get(/(.*)/,(req,res)=>{
+  //res.status(404).json({
+  //actualUrlHit: req.url,
+  //method: req.method,
+  //availableRoutes:["POST /login",
+  //"POST /register",
+  //"GET /debug" ]
+   //});
+ // });
   // Start server
 const PORT =parseInt(process.env.PORT || "5000",10);
   app.listen(PORT,"0.0.0.0",() =>{
@@ -177,3 +182,4 @@ const PORT =parseInt(process.env.PORT || "5000",10);
   console.error("Critical initialization error:",err)
   process.exit(1);
   });
+  export default app;
