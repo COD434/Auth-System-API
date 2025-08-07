@@ -19,6 +19,13 @@ dotenv.config();
 import {verifyToken,guestToken}  from "../prisma/config/jwtAuth"
 
 
+interface credentials{
+email:string;
+password:string;
+username?:string;
+id?:string
+}
+
 interface LoginCred  {
         email:string;
         password: string;
@@ -137,7 +144,7 @@ res.setHeader("X-Guest-Token",GToken);
 guestCounter.inc({endpoint:req.path});  
 
 }
-if(user?.type === "guest"){
+if(user?.type === "guest-mode"){
 guestBlocked.inc({endpoint: req.path, method: req.method})
 }
   (res as any).user = user;
@@ -305,17 +312,18 @@ bcryptRounds = 10
 	const verifyToken = genOTP()
 	const verifyExpires = new Date(Date.now() + tokenExpiryHours * 60 * 60 * 1000);
 	const hashedPassword = await bcrypt.hash(password, bcryptRounds);
+	console.log("hashedPassword:",hashedPassword)
 	const user = await prisma.user.create({
 		data:{
 		email,
-		username,
 		password:hashedPassword,
+		username,
 		isVerified:false,
 		verifyToken,
 		verifyExpires
 		}
-	});
-
+	})
+	
 	try{
 		await publishToQueue("emailQueue",{email,verifyToken});
 
@@ -346,7 +354,6 @@ bcryptRounds = 10
   try {
     const { email, password, username } = req.body;
      await Authservice.registerUser({email,password,username})
-
        res.status(200).json({
 	success:true,
         message: "Registration successful! Please check your email to verify your account."
@@ -391,7 +398,7 @@ body("username")
         errors:errors.array()
       })
     }
-    next()
+    next();
   }
 
 
@@ -403,26 +410,37 @@ username?:string
 }){
 	const {email, password} = credentials;
 	const user = await prisma.user.findFirst({where: { email}})
-
-	if (!user){
+if (!user || !user.password || typeof user.password !== "string" || !user.password.startsWith("$2b$")){
 	throw new Error("INVALID_EMAIL")
 
 	}
 
-const isValidPassword = await bcrypt.compare(password,user.password);
-if (!isValidPassword){
+
+	let isValidPassword = false;
+
+try{
+	isValidPassword = await bcrypt.compare(password,user.password)
+
+
+}catch(err){
+console.error("bcrypt.compar faled or timed out",err)
 throw new Error("INVALID_PASSWORD")
+}
+
+	console.log("passwords commpare",user.password)
+if (!isValidPassword){
+throw new Error("INVALID_EMAIL")
 }
 return user;
 }
 };
-	  
+
 const handleLoginError = (
 	error:Error,
 	res: Response,
-	formValues:{email?: string; username?: string} = {}
+	formValues:{email?: string; username?: string; password?:string} = {}
 )=>{
-	const{email, username} = formValues;
+	const{email, password, username} = formValues;
 	
 	switch(error.message){
 		case "INVALID_EMAIL":
@@ -456,10 +474,10 @@ const {email,password, username}=req.body;
     const user = await authServiceLogin.loginUser({email, password, username});
     if (!user){
     errorCounter.inc();
+    res.status(400).json({success:false,message: "Incorrect username or email"})
     }
     
     const token = generateJWT({ userId: user.id,email:user.email })
-    
     
     const redisClient = await initializeRedisClient();
 
@@ -476,7 +494,7 @@ await redisClient.set(`session:${user.id}`,accessToken,"EX",15 * 60 );
 
 res.cookie("token", accessToken, {
 httpOnly:true,
-secure: process.env.NODE_ENV === " production",
+secure: process.env.NODE_ENV === "production",
 sameSite: "strict",
 maxAge: 15 * 60 * 1000,
 })
@@ -496,7 +514,7 @@ maxAge: 15 * 60 * 1000,
   }catch(error){
           if(error instanceof Error){
 		  errorCounter.inc()
-  handleLoginError(error, res, {email,username})
+  return handleLoginError(error as Error, res, {email,username})
   }
 }
 }

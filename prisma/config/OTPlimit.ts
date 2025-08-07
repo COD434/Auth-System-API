@@ -25,7 +25,8 @@ const results = await this.redis
 .pipeline()
 .hgetall(`rate_limit:${key}`)
 .exec();
-const bucket = results[0][1] as {tokens?: string;lastRefill?: string}
+const data= results?.[0]?.[1] ?? {} 
+const bucket = data as {tokens?: string;lastRefill?: string}
 || {} ;
 const currentToken = parseFloat(bucket.tokens || capacity.toString ());
 const lastRefill = parseFloat(bucket.lastRefill || now.toString())

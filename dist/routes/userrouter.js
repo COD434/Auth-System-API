@@ -24,5 +24,10 @@ router.post("/admin/whitelist/add", authController_1.requireAdmin, jwtAuth_1.aut
 router.post("/admin/whitelist/remove", authController_1.requireAdmin, jwtAuth_1.authenticateJWT, whitelistContrller_1.adminController.removeIP);
 router.get("/admin/whitelist/list", authController_1.requireAdmin, jwtAuth_1.authenticateJWT, whitelistContrller_1.adminController.listIP);
 router.get("/verify-email", (0, authController_1.VerificationOfEmail)());
-router.get("/guest", authController_1.Incognito);
+router.get("/guest-mode", authController_1.Incognito, (req, res) => {
+    console.log(authController_1.Incognito);
+    res.status(200).json({ message: "Guest login successful",
+        user: res.user,
+    });
+});
 exports.default = router;

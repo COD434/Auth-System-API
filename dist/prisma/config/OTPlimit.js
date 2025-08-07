@@ -13,12 +13,14 @@ class TokenBucket {
         this.redis = redisClient;
     }
     async consume(key, capacity, refillRate) {
+        var _a, _b;
         const now = Date.now();
         const results = await this.redis
             .pipeline()
             .hgetall(`rate_limit:${key}`)
             .exec();
-        const bucket = results[0][1]
+        const data = (_b = (_a = results === null || results === void 0 ? void 0 : results[0]) === null || _a === void 0 ? void 0 : _a[1]) !== null && _b !== void 0 ? _b : {};
+        const bucket = data
             || {};
         const currentToken = parseFloat(bucket.tokens || capacity.toString());
         const lastRefill = parseFloat(bucket.lastRefill || now.toString());

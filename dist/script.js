@@ -65,7 +65,12 @@ monitor_1.errorCounter.inc();
 monitor_1.redisOps.inc();
 monitor_1.authSuccessCounter.inc();
 setInterval(KPI, 30000);
-(0, Rabbitmq_1.initRabbitMq)();
+if (process.env.NODE_ENV !== "test") {
+    (0, Rabbitmq_1.initRabbitMq)().catch((err) => {
+        console.error("failed to init Rabbit:", err);
+        process.exit(1);
+    });
+}
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.urlencoded({ extended: true }));
@@ -99,7 +104,7 @@ async function initializeApp() {
         app.post("/verify-reset-otp", authController_1.verifyResetOTP);
         app.post("/update-password", authController_1.UpdatePassword);
         app.post("/register", ...authController_1.userValidations, (0, express_async_handler_1.default)(authController_1.register));
-        app.post("/login", authController_1.Lvalidations, (0, OTPlimit_1.LoginLimiterMiddleware)(), authController_1.login);
+        app.post("/login", OTPlimit_1.LoginLimiterMiddleware, authController_1.Lvalidations, authController_1.login);
         app.get("/metrics", monitor_2.Metrics);
         app.use((err, req, res, next) => {
             console.error(`Error: ${err.message}`, {
@@ -113,15 +118,15 @@ async function initializeApp() {
         app.use((req, res) => {
             res.status(404).json({ error: "Route not found" });
         });
-        app.get(/(.*)/, (req, res) => {
-            res.status(404).json({
-                actualUrlHit: req.url,
-                method: req.method,
-                availableRoutes: ["POST /login",
-                    "POST /register",
-                    "GET /debug"]
-            });
-        });
+        //app.get(/(.*)/,(req,res)=>{
+        //res.status(404).json({
+        //actualUrlHit: req.url,
+        //method: req.method,
+        //availableRoutes:["POST /login",
+        //"POST /register",
+        //"GET /debug" ]
+        //});
+        // });
         // Start server
         const PORT = parseInt(process.env.PORT || "5000", 10);
         app.listen(PORT, "0.0.0.0", () => {
@@ -137,3 +142,4 @@ initializeApp().catch(err => {
     console.error("Critical initialization error:", err);
     process.exit(1);
 });
+exports.default = app;

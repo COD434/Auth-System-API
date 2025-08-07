@@ -37,21 +37,27 @@ services:
     container_name: api
     ports:
       - "5000:5000"
+      - "5555:5555"
     env_file:
-      - .env
+      - .env.docker
     depends_on:
       - redis
       - db
-    
-    command: > 
+
+    command: >
       sh -c "
-      npx prisma generate &&
-      npx prisma migrate deploy &&
-      npm run build &&
-      npm run start"
+        until nc -z db 5432; do
+         echo 'Waiting for db to be ready...'
+         sleep 1 
+        done &&
+        npx prisma generate &&
+        npx prisma migrate deploy &&
+        npm run build &&
+        npm run start
+        "
 
     environment:
-      - DATABSE_URL=postgresql://seeisa:karabo@db:5432/top_user
+      - DATABASE_URL=postgresql://seeisa:karabo@db:5432/top_user
       - RABBITMQ_URL=amqp://rabbitmq
     restart: always
 
@@ -59,7 +65,7 @@ services:
     image: redis:alpine
     container_name: redis
     ports:
-      - "6380:6380"
+      - "17214:17214"
 
 
   db:

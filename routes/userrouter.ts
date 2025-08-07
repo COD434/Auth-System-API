@@ -41,7 +41,12 @@ Promise.resolve(fn(req, res, next)).catch(next);
   router.post("/admin/whitelist/remove",requireAdmin,authenticateJWT,adminController.removeIP);
   router.get("/admin/whitelist/list",requireAdmin,authenticateJWT,adminController.listIP) 
 router.get("/verify-email",VerificationOfEmail())
-router.get("/guest",Incognito)
+router.get("/guest-mode",Incognito,(req,res)=>{
+	console.log(Incognito)
+res.status(200).json({ message:"Guest login successful",
+user: (res as any).user,
+})
+})
 
 
 export default router;
