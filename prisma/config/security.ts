@@ -4,7 +4,7 @@ import Redis from "ioredis"
 import {RateLimiterRedis} from "rate-limiter-flexible";
 import csrf from "csurf";                                                   
 import jwt from "jsonwebtoken";
-dotenv.config();
+dotenv.config({path:".env"});
 const IP_EXPIRATION_SECONDS = 7 * 24 * 60 * 60;
 
  interface CSPDirectives{
@@ -35,12 +35,12 @@ jwt.verify(token, JWT_SECRET);
 
 
 const redisClient = new Redis({
-host:process.env.REDIS_HOST,
-port:Number(process.env.REDIS_PORT),
+host:process.env.REDIS_HOST!,
+port:Number(process.env.REDIS_PORT!),
 enableOfflineQueue: false,
 retryStrategy:(times)=> Math.min(times * 50, 2000),
 maxRetriesPerRequest:10,
-password:process.env.REDIS_PASSWORD
+//password:process.env.REDIS_PASSWORD
 });
 const WHITELIST_KEY = process.env.WHITELIST_KEY
 export const dynamicWhiteList={
