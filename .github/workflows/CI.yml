@@ -38,12 +38,12 @@ jobs:
       redis:
         image: redis
         ports:
-          - 17214:17214
+          - 6379:6379
 
     env:
       NODE_ENV: test
       DATABASE_URL: postgres://seeisa:karabo@localhost:5432/top_user_test
-      REDIS_URL: redis://default:GHgm4ESlua6hyUL7pD7grl8exlRZYzDt@redis-17214.c82.us-east-1-2.ec2.redns.redis-cloud.com:17214
+      REDIS_URL: redis://localhost:6379
       RABBITMQ_URL: amqp://rabbitmq
 
     steps:
