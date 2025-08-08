@@ -43,7 +43,7 @@ jobs:
     env:
       NODE_ENV: test
       DATABASE_URL: postgres://seeisa:karabo@localhost:5432/top_user_test
-      REDIS_URL: redis://localhost:6379
+      REDIS_URL: redis://redis:6379
       RABBITMQ_URL: amqp://rabbitmq
 
     steps:
