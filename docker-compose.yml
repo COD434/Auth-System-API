@@ -60,7 +60,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://seeisa:karabo@db:5432/top_user
       - RABBITMQ_URL=amqp://rabbitmq
-      - REDIS_HOST=redis
+     - REDIS_HOST=redis
       - REDIS_PORT=6379
     restart: always
 

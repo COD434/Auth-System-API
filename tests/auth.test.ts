@@ -8,7 +8,7 @@ import {prisma} from "../prisma/config/validate"
 import Redis from "ioredis";
 dotenv.config({path:".env.test"});
 
-process.env.REDIS_HOST= "127.0.0.1"
+process.env.REDIS_HOST= "localhost"
 process.env.REDIS_PORT= "6379"
 const expect = chai.expect;
 const testPassword = "SuperSecret123";
