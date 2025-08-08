@@ -15,6 +15,7 @@ const testPassword = "SuperSecret123";
 const testEmail= "test0@email.com";
 
 describe("User Auth flow",()=>{
+
 const redis = new Redis({
 host:process.env.REDIS_HOST,
 port: Number(process.env.REDIS_PORT)
