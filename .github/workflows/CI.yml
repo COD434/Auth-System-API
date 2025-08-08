@@ -54,6 +54,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          
+      - name: Print environment variable
+        run: |
+           echo "REDIS_URL=$REDIS_URL"
+           echo "REDIS_HOST=$REDIS_HOST"
+           echo "REDIS_PORT=$REDIS_PORT"
+
 
       - name:  Install dependencies
         run: npm ci
