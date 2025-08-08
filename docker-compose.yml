@@ -1,5 +1,6 @@
 #ersion: "3.8"
 services:
+  
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -59,7 +60,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://seeisa:karabo@db:5432/top_user
       - RABBITMQ_URL=amqp://rabbitmq
-      - REDIS_URL=redis://localhost:6379
+      - REDIS_URL=redis://redis:6379
     restart: always
 
   redis:
@@ -78,3 +79,5 @@ services:
       POSTGRES_DB: top_user
     ports:
       - "5432:5432"
+
+  

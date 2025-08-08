@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import amqp from "amqplib";
+import amqp from  "amqplib";
 import {sendVerificationEmail} from "./email";
 dotenv.config()
 
