@@ -13,8 +13,8 @@ process.env.REDIS_HOST= "localhost"
 process.env.REDIS_PORT= "6379"
 
 const expect = chai.expect;
-const testPassword = "SuperSecret123";
-const testEmail= "test0@email.com";
+const testPassword = "1222Hunnids#@";
+const testEmail= "seeisakarabo461@email.com";
 
 describe("User Auth flow",()=>{
 
