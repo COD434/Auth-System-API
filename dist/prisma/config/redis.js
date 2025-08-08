@@ -51,7 +51,7 @@ const setupRedis = async (options) => {
         const redisClient = new ioredis_1.default({
             host: config.host,
             port: Number(config.port),
-            //password :config.password,
+            password: config.password,
             retryStrategy: (times) => Math.min(times * 50, 2000),
             maxRetriesPerRequest: config.maxRetriesPerRequest
         });

@@ -83,7 +83,7 @@ const setupRedis = async (options?: SetupRedisOptions) => {
     const redisClient = new Redis({
     host: config.host as string,
     port:Number(config.port) ,
-    //password :config.password,
+    password :config.password,
     retryStrategy:(times:number)=> Math.min(times * 50,2000),
     maxRetriesPerRequest:config.maxRetriesPerRequest
     });

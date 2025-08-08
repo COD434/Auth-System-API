@@ -8,12 +8,17 @@ import {prisma} from "../prisma/config/validate"
 import Redis from "ioredis";
 dotenv.config({path:".env.test"});
 
+process.env.REDIS_HOST= "redis"
+process.env.REDIS_PORT= "6379"
 const expect = chai.expect;
 const testPassword = "SuperSecret123";
 const testEmail= "test0@email.com";
 
 describe("User Auth flow",()=>{
-const redis = new Redis(process.env.REDIS_URL!);
+const redis = new Redis({
+host:process.env.REDIS_HOST,
+port: Number(process.env.REDIS_PORT)
+});
 
 before(async()=>{
 await prisma.user.deleteMany()
