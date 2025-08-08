@@ -2,6 +2,7 @@ import sinon from "sinon"
 import dotenv from "dotenv";
 import chai from "chai";
 import request from "supertest";
+
 import app from  "../script";
 import * as rabbitmq from "../prisma/config/Rabbitmq";
 import {prisma} from "../prisma/config/validate"
