@@ -45,7 +45,7 @@ const rabbitmq = __importStar(require("../prisma/config/Rabbitmq"));
 const validate_1 = require("../prisma/config/validate");
 const ioredis_1 = __importDefault(require("ioredis"));
 dotenv_1.default.config({ path: ".env.test" });
-process.env.REDIS_HOST = "redis";
+process.env.REDIS_HOST = "127.0.0.1";
 process.env.REDIS_PORT = "6379";
 const expect = chai_1.default.expect;
 const testPassword = "SuperSecret123";
