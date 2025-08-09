@@ -61,6 +61,7 @@ jobs:
            echo "REDIS_URL=$REDIS_URL"
            echo "REDIS_HOST=$REDIS_HOST"
            echo "REDIS_PORT=$REDIS_PORT"
+           echo "DATABASE_URL=$DATABASE_URL"
 
 
       - name:  Install dependencies
