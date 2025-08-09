@@ -86,6 +86,9 @@ jobs:
           DATABASE_URL: postgresql://seeisa:karabo@localhost:5432/top_user_test
         run: npx prisma db seed
 
+      - name: Reset DB
+        run: npx prisma migrate reset --force
+
 
       - name: 🧪 Run Tests
         run: npm run test
