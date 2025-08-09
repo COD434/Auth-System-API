@@ -78,6 +78,7 @@ jobs:
          fi
          sleep 2
          done
+        
 
       - name: 🧱 Run Migrations
         run: npx prisma migrate deploy
@@ -86,6 +87,12 @@ jobs:
         env:
           DATABASE_URL: postgresql://seeisa:karabo@localhost:5432/top_user_test
         run: npx prisma db seed
+
+      - name: List DB tables
+        run: psql $DATABASE_URL -c "\dt"
+
+      - name: View DB logs
+        run: docker logs postgres
 
       - name: Reset DB
         run: npx prisma migrate reset --force
