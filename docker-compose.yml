@@ -41,6 +41,7 @@ services:
       - "5555:5555"
     env_file:
       - .env.docker
+      - .env.test
     depends_on:
       - redis
       - db
