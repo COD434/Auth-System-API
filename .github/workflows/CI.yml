@@ -45,7 +45,7 @@ jobs:
       DATABASE_URL: postgres://seeisa:karabo@localhost:5432/top_user_test
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-      RABBITMQ_URL: amqp://rabbitmq
+      RABBITMQ_URL: amqp://localhost
 
     steps:
       - name:  Checkout code
