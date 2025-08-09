@@ -74,7 +74,7 @@ jobs:
               
       - name: Seed database
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb
+          DATABASE_URL: postgresql://seeisa:karabo@localhost:5432/top_user_test
         run: npx prisma db seed
 
 
