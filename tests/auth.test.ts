@@ -6,6 +6,7 @@ import app from  "../script";
 import * as rabbitmq from "../prisma/config/Rabbitmq";
 import {prisma} from "../prisma/config/validate"
 import Redis from "ioredis";
+
 dotenv.config({path:".env.test"});
 
 process.env.REDIS_HOST= "localhost"
