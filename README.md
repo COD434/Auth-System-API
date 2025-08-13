@@ -1,4 +1,5 @@
 # 🔐 Authenik8
+![Documents-Passing](https://img.shields.io/badge/:badgeContent)
 
 A secure, production-ready authentication and rate-limiting API built with Node.js, Express, Prisma, PostgreSQL, and Redis — designed to help developers build safe, scalable apps fast.
 
