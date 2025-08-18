@@ -19,38 +19,30 @@ const redis_1 = require("../prisma/config/redis");
 dotenv_1.default.config();
 const jwtAuth_1 = require("../prisma/config/jwtAuth");
 ;
-const createPasswordService = {
-    async requestPasswordReset({ email, otpExpirationMinutes = 10 }) {
-        const resetToken = (0, email_1.genOTP)();
-        const resetExpires = new Date(Date.now() + otpExpirationMinutes * 60 * 1000);
-        try {
-            const user = await validate_1.prisma.user.findFirst({ where: { email } });
+const toMail = {
+    sendVerificationEmail: email_1.sendVerificationEmail,
+    sendWelcomeEmail: email_1.sendWelcomeEmail,
+    SendResetPasswordOTP: email_1.SendResetPasswordOTP,
+    genOTP: email_1.genOTP
+};
+const createPasswordService = (prisma, mailService, options = {}) => {
+    const { otpExpirationMinutes = 10, otpGenerator = email_1.genOTP, } = options;
+    return {
+        async requestPasswordReset(email) {
+            const user = await prisma.user.findFirst({ where: { email }, });
             if (!user) {
                 throw new Error("INVALID_CREDENTIALS");
             }
-            const updatedUser = await validate_1.prisma.user.update({
-                where: { id: user.id },
+            const resetToken = otpGenerator();
+            const resetExpires = new Date(Date.now() + otpExpirationMinutes * 60 * 1000);
+            await prisma.user.update({
+                where: { email },
                 data: { resetToken, resetExpires },
             });
-            try {
-                console.log(`sending otp ${resetToken} to ${email}`);
-                await (0, Rabbitmq_1.publishToQueue)("emailQueue", { email, resetToken, userId: user.id });
-            }
-            catch (err) {
-                console.error("OTP failure:", err);
-                await validate_1.prisma.user.update({
-                    where: { id: user.id },
-                    data: { resetToken: null, resetExpires: null },
-                });
-                throw new Error("Failed to send OTP");
-            }
-            return updatedUser;
+            await mailService.SendResetPasswordOTP(email, resetToken);
+            return { email, resetToken };
         }
-        catch (err) {
-            console.error("Password reset error:", err);
-            throw err;
-        }
-    }
+    };
 };
 //ANONYMOUS AUTH LOGIC
 const Incognito = (req, res, next) => {
@@ -82,31 +74,30 @@ const createPasswordErrorHandler = (options) => {
         });
     };
 };
+const passwordService = createPasswordService(validate_1.prisma, toMail, {
+    otpExpirationMinutes: 15,
+    otpGenerator: email_1.genOTP
+});
 const HandlePasswordError = createPasswordErrorHandler({
     userNotFoundMessage: "INVALID_CREDENTIALS",
     successMessage: "OTP sent to your email"
 });
 const requestPassword = async (req, res, next) => {
     const { email } = req.body;
-    if (!email) {
-        res.status(400).json({
-            success: false,
-            message: "Email is required"
-        });
-    }
     try {
-        await createPasswordService.requestPasswordReset({ email });
-        res.status(200).json({
-            success: true,
-            message: ` reset OTP has been sent to ${email}`
-        });
+        const result = await passwordService.requestPasswordReset(email);
+        return {
+            email: result.email,
+            error: "",
+            success: "Password reset OTP has been sent to your email"
+        };
     }
     catch (err) {
         if (err instanceof Error) {
-            return HandlePasswordError(err, res, email);
+            HandlePasswordError(err, res, email);
         }
         else {
-            return HandlePasswordError(new Error(String(err)), res, email);
+            HandlePasswordError(new Error(String(err)), res, email);
         }
     }
 };
@@ -133,25 +124,18 @@ const verifyResetOTP = async (req, res, next) => {
 };
 exports.verifyResetOTP = verifyResetOTP;
 const UpdatePassword = async (req, res, next) => {
-    const { email, password } = req.body;
+    const { email, password, otp } = req.body;
     const hashed = await bcrypt_1.default.hash(password, 10);
-    if (!email || !password) {
-        return res.status(400).json({
-            success: false,
-            message: "Email,password are required"
-        });
-    }
     try {
         const user = await validate_1.prisma.user.findFirst({
             where: {
-                email
+                email,
+                resetToken: otp,
+                resetExpires: { gt: new Date() }
             }
         });
         if (!user) {
-            res.status(400).json({
-                success: false,
-                message: "Huh! you sure your have an account"
-            });
+            res.status(400);
             return;
         }
         await validate_1.prisma.user.update({
@@ -162,18 +146,11 @@ const UpdatePassword = async (req, res, next) => {
                 resetExpires: null
             }
         });
-        res.status(200).json({
-            success: true,
-            message: "Success!"
-        });
+        res.status(200);
         return;
     }
     catch (err) {
-        console.error("Password update error:", err);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
+        res.status(500);
         return;
     }
 };
@@ -215,7 +192,7 @@ const Authservice = {
         const verifyToken = (0, email_1.genOTP)();
         const verifyExpires = new Date(Date.now() + tokenExpiryHours * 60 * 60 * 1000);
         const hashedPassword = await bcrypt_1.default.hash(password, bcryptRounds);
-        //console.log("hashedPassword:",hashedPassword)
+        console.log("hashedPassword:", hashedPassword);
         const user = await validate_1.prisma.user.create({
             data: {
                 email,
@@ -286,7 +263,7 @@ const loginValidations = ({ minUsernameLength = 5, requireUsername = false } = {
 const vAL = (req, res, next) => {
     const errors = (0, express_validator_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
             success: false,
             errors: errors.array()
         });
@@ -297,7 +274,7 @@ exports.vAL = vAL;
 const authServiceLogin = {
     async loginUser(credentials) {
         const { email, password } = credentials;
-        const user = await validate_1.prisma.user.findUnique({ where: { email } });
+        const user = await validate_1.prisma.user.findFirst({ where: { email } });
         if (!user || !user.password || typeof user.password !== "string" || !user.password.startsWith("$2b$")) {
             throw new Error("INVALID_EMAIL");
         }
@@ -309,6 +286,7 @@ const authServiceLogin = {
             console.error("bcrypt.compar faled or timed out", err);
             throw new Error("INVALID_PASSWORD");
         }
+        console.log("passwords commpare", user.password);
         if (!isValidPassword) {
             throw new Error("INVALID_EMAIL");
         }

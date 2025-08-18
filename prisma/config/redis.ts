@@ -33,8 +33,7 @@ host:process.env.REDIS_HOST ?? "redis",
 port: Number(process.env.REDIS_PORT ?? "6379"),
 //password:process.env.REDIS_PASSWORD,
 maxRetriesPerRequest: 10,
-connectTimeout: 5000//,
-//tls:{}
+connectTimeout: 5000
 }
 
 const DEFAULT_STORE_OPTIONS : RedisStoreOptions = {
@@ -84,7 +83,7 @@ const setupRedis = async (options?: SetupRedisOptions) => {
     const redisClient = new Redis({
     host: config.host as string,
     port:Number(config.port) ,
-  //  password :config.password,
+    password :config.password,
     retryStrategy:(times:number)=> Math.min(times * 50,2000),
     maxRetriesPerRequest:config.maxRetriesPerRequest
     });

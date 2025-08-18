@@ -1,10 +1,12 @@
+#ersion: "3.8"
 services:
+  
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+    ports: 
+    - "5672:5672"
+    - "15672:15672"
 
   email-worker:
     build:
@@ -16,19 +18,20 @@ services:
       - RABBITMQ_URL=amqp://rabbitmq
     restart: always
 
+
   grafana:
-    image: grafana/grafana
-    container_name: grafana
-    ports:
-      - "3001:3000"
+        image: grafana/grafana
+        container_name: grafana
+        ports:
+          - "3001:3000"
 
   prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    volumes:
-      - ./prometheus.yml:/home/seeisa/Prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
+      image: prom/prometheus
+      container_name: prometheus
+      volumes:
+        - ./prometheus.yml:/home/seeisa/Prometheus/prometheus.yml
+      ports:
+        - "9090:9090"
 
   api:
     build: .
@@ -36,27 +39,29 @@ services:
     ports:
       - "5000:5000"
       - "5555:5555"
-    env_file: 
+    env_file:
       - .env.docker
       - .env.test
     depends_on:
       - redis
       - db
-    command: |
+
+    command: >
       sh -c "
-      until nc -z db 5432; do
-       echo 'Waiting for db to be ready...'
-       sleep 1 
-      done &&
-      npx prisma generate &&
-      npx prisma migrate deploy &&
-      npm run build &&
-      npm run start
-      "
+        until nc -z db 5432; do
+         echo 'Waiting for db to be ready...'
+         sleep 1 
+        done &&
+        npx prisma generate &&
+        npx prisma migrate deploy &&
+        npm run build &&
+        npm run start
+        "
+
     environment:
       - DATABASE_URL=postgresql://seeisa:karabo@db:5432/top_user
       - RABBITMQ_URL=amqp://rabbitmq
-      - REDIS_HOST=redis
+     - REDIS_HOST=redis
       - REDIS_PORT=6379
     restart: always
 
@@ -66,12 +71,15 @@ services:
     ports:
       - "6379:6379"
 
+
   db:
     image: postgres:16-alpine
     container_name: postgres
     environment:
-      - POSTGRES_USER=seeisa
-      - POSTGRES_PASSWORD=karabo
-      - POSTGRES_DB=top_user
+      POSTGRES_USER: seeisa
+      POSTGRES_PASSWORD: karabo
+      POSTGRES_DB: top_user
     ports:
       - "5432:5432"
+
+  

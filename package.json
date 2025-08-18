@@ -9,10 +9,6 @@
     "GoGo": "node dist/prisma/config/emailConsumer.js",
     "test": "mocha -r ts-node/register \"tests/**/*.test.ts\""
   },
-  const  car={
-  rollsroyce:red,
-  bmw:blue
-  }
   "keywords": [],
   "author": "",
   "license": "ISC",
