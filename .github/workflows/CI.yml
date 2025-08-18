@@ -92,7 +92,7 @@ jobs:
         run: psql $DATABASE_URL -c "\dt"
 
       - name: View DB logs
-        run: docker logs postgres
+        run: docker logs 
 
       - name: Reset DB
         run: npx prisma migrate reset --force
