@@ -1,6 +1,3 @@
-require("dotenv").config();
-delete require.cache[require.resolve("./prisma/config/redis")];
-delete require.cache[require.resolve("./prisma/config/session")];
 import {initializeRedisClient} from "./prisma/config/redis"
 import {initRabbitMq} from "./prisma/config/Rabbitmq"
 import{loginCount, 
@@ -82,13 +79,7 @@ errorCounter.inc();
 redisOps.inc();
 authSuccessCounter.inc();
 setInterval(KPI,30000);
-
-if(process.env.NODE_ENV !== "test"){
-initRabbitMq().catch((err)=>{
-console.error("failed to init Rabbit:",err)
-process.exit(1);
-})
-}
+initRabbitMq()
 
 app.use(express.json());
 app.use(cookieParser());
@@ -121,7 +112,7 @@ const { redisStore } = await setupRedis();
 
 
   await initializeRateLimiter()
-
+  
 
 
   app.use("/api/auth", router);
@@ -131,7 +122,7 @@ const { redisStore } = await setupRedis();
   app.post("/verify-reset-otp",verifyResetOTP as express.RequestHandler );
   app.post("/update-password",UpdatePassword   as express.RequestHandler )
   app.post("/register" ,...userValidations,asyncHandler(register)  );
-  app.post("/login",LoginLimiterMiddleware,Lvalidations,login as express.RequestHandler );
+  app.post("/login",LoginLimiterMiddleware(),Lvalidations,login as express.RequestHandler );
 app.get("/metrics",Metrics)
 
 
@@ -156,22 +147,12 @@ app.use((req, res)=>{
 res.status(404).json({error: "Route not found"})
 });
   
-  
-
-//app.get(/(.*)/,(req,res)=>{
-  //res.status(404).json({
-  //actualUrlHit: req.url,
-  //method: req.method,
-  //availableRoutes:["POST /login",
-  //"POST /register",
-  //"GET /debug" ]
-   //});
- // });
-  // Start server
-const PORT =parseInt(process.env.PORT || "5000",10);
+  const PORT =parseInt(process.env.PORT || "5000",10);
   app.listen(PORT,"0.0.0.0",() =>{
   console.log("Server running on port 5000")
   });
+
+
 
   } catch(err) {
   console.error("Failed to initialize application:",err)
