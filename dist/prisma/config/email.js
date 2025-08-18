@@ -16,8 +16,8 @@ const transporter = nodemailer_1.default.createTransport({
     port: 587,
     secure: false,
     auth: {
-        user: "garland44@ethereal.email",
-        pass: "MHqEAx79cwA1mMhHzB"
+        user: "fannie47@ethereal.email",
+        pass: "QpnbWHrRJsER8v8jZp"
     }
 });
 const Token = () => {
@@ -53,7 +53,7 @@ const genOTP = () => {
 exports.genOTP = genOTP;
 const SendResetPasswordOTP = async (email, otp) => {
     const mailOptions = {
-        from: `"Karabo"${process.env.RESET_EMAIL_USER}`,
+        from: "Karabo",
         to: email,
         subject: "Password Reset OTP",
         html: `<div style="font-style:Arial,sans-serif;

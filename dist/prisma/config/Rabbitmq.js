@@ -8,10 +8,28 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const amqplib_1 = __importDefault(require("amqplib"));
 dotenv_1.default.config();
 let channel;
-const initRabbitMq = async () => {
-    const connection = await amqplib_1.default.connect(process.env.RABBITMQ_URL);
-    channel = await connection.createChannel();
-    await channel.assertQueue("emailQueue", { durable: true });
+const initRabbitMq = async (maxRetries = 10, retryDelay = 3000) => {
+    let retryCount = 0;
+    const retry = async () => {
+        try {
+            const connection = await amqplib_1.default.connect(process.env.RABBITMQ_URL);
+            channel = await connection.createChannel();
+            await channel.assertQueue("emailQueue", { durable: true });
+            //await channel.assertQueue("otpMAIL", {durable:true});
+            console.log("Rabbitmq has connected successfully");
+        }
+        catch (err) {
+            retryCount++;
+            if (retryCount >= maxRetries) {
+                console.error("Max retries reached.Failed to connect to RabbitMQ:", err);
+                throw err;
+            }
+            console.warn("Connection failed");
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            return retry();
+        }
+    };
+    return retry();
 };
 exports.initRabbitMq = initRabbitMq;
 const publishToQueue = async (queue, message) => {

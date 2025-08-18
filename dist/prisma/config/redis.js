@@ -15,7 +15,8 @@ const DEFAULT_REDIS_CONFIG = {
     port: Number((_b = process.env.REDIS_PORT) !== null && _b !== void 0 ? _b : "6379"),
     //password:process.env.REDIS_PASSWORD,
     maxRetriesPerRequest: 10,
-    connectTimeout: 5000
+    connectTimeout: 5000 //,
+    //tls:{}
 };
 const DEFAULT_STORE_OPTIONS = {
     prefix: "session",
@@ -51,7 +52,7 @@ const setupRedis = async (options) => {
         const redisClient = new ioredis_1.default({
             host: config.host,
             port: Number(config.port),
-            password: config.password,
+            //  password :config.password,
             retryStrategy: (times) => Math.min(times * 50, 2000),
             maxRetriesPerRequest: config.maxRetriesPerRequest
         });
