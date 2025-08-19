@@ -36,8 +36,8 @@ You're building a SaaS app in **React**. Instead of building login, auth, and ra
 - `/register`: Sign up user and send verification OTP  
 - `/login`: Authenticate + return JWT
 - `/verify-reset-otp`: Verify OTP 
-- `/request-password-reset`: Submit OTP to activate account  
-- `/update-password`: Rotate tokens securely  
+- `/request-password-reset`:Request a Password reset OTP 
+- `/update-password`: Securely update your password 
 - `/admin`: Protected routes for admin actions  
 - All protected routes use `Authorization: Bearer <token>`
 
