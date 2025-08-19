@@ -18,7 +18,7 @@ dotenv.config({
 
 
 const expect = chai.expect;
-const newPass = "3000Hunnids#@"
+const newPass = "1234Hunnida@@"
 const testPassword = "1234Hunnids#@";
 const testEmail= "seeisakarabo461@email.com";
 const userName = "tester";
