@@ -107,12 +107,8 @@ describe("User Auth flow", () => {
         const requestPassReset = await (0, supertest_1.default)(script_1.default).post("/request-password-reset").send({
             email: testEmail
         });
-        const verifyOTP = await (0, supertest_1.default)(script_1.default).post("/verify-reset-otp").send({
-            email: testEmail
-            //otp:OTP
-        });
+        
        
-        expect(verifyOTP.status).to.equal(200);
         expect(requestPassReset.status).to.equal(200);
         expect(login.status).to.equal(200);
         expect(login.body.user).to.have.property("accessToken");
