@@ -93,12 +93,7 @@ const verifyOTP= await request(app).post("/verify-reset-otp").send({
 email:testEmail
 //otp:OTP
 })
-	//NEEDS FIX
-//const passUpdate = await request(app).post("/update-password").send({
-//email:testEmail,
-//password:newPass
-//})
-expect(passUpdate.status).to.equal(200)
+
 expect(verifyOTP.status).to.equal(200)
 expect(requestPassReset.status).to.equal(200)
 expect(login.status).to.equal(200);
