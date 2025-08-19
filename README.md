@@ -1,5 +1,4 @@
-![Documents Passing](https://img.shields.io/badge/documents-passing-brightgreen)  [![CI](https://github.com/COD434/Authenik8/actions/workflows/CI.yml/badge.svg)](https://github.com/COD434/Authenik8/actions/workflows/CI.yml)
-
+![Documents Passing](https://img.shields.io/badge/documents-passing-brightgreen)  [![CI](https://github.com/COD434/Authenik8/actions/workflows/CI.yml/badge.svg?branch=main&event=push)](https://github.com/COD434/Authenik8/actions/workflows/CI.yml)
 # 🔐 Authenik8
 
 A secure, production-ready authentication and rate-limiting API built with Node.js, Express, Prisma, PostgreSQL, and Redis — designed to help developers build safe, scalable apps fast.
