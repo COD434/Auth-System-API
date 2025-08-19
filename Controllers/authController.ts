@@ -242,23 +242,23 @@ const errorMessage = err instanceof Error ? err.message : "Unknown error";
 //Update password
 export const UpdatePassword = async(req:Request,res:Response ,next:NextFunction)=>{
   const {email,password}=req.body;
-	const hashed = await bcrypt.hash(password,10)
+        const hashed = await bcrypt.hash(password,10)
  
-	if(!email || !password ){
+        if(!email || !password ){
   return res.status(400).json({
   success:false,
   message:"Email,password are required"})
   }
-	try{
+        try{
     const user = await prisma.user.findFirst({
       where:{email}
     })
     if(!user){
-	res.status(400).json({
+        res.status(400).json({
         success:false,
         message:"Huh! you sure your have an account"});
 
-	return;
+        return;
     }
 
     await prisma.user.update({
