@@ -92,42 +92,57 @@ interface PasswordResetOptions {
 }
 
 
+const createPasswordService ={
+       async requestPasswordReset({email,otpExpirationMinutes = 10 }:
+                                  {
+       email:string,
+       otpExpirationMinutes?:number
+ 
 
-const toMail :  MailService={
-sendWelcomeEmail,
-SendResetPasswordOTP,
-genOTP
-};
-const createPasswordService:any = (
-prisma:  typeof PrismaClient,
-mailService: any,
-options:PasswordResetOptions= {}
-)=> {
-	const {
-	otpExpirationMinutes = 10,
-        otpGenerator = genOTP,
-	} = options;
-
-return{
-
-async requestPasswordReset(email: string):Promise<PasswordResetResult>{
-  const user = await prisma.user.findFirst({where:{email},})
-
-  if(!user){
-throw new Error("INVALID_CREDENTIALS");
-  }
-const resetToken = otpGenerator();
+}){
+const resetToken = genOTP();
 const resetExpires= new Date(Date.now() + otpExpirationMinutes * 60 * 1000)
+ 
+  try{
+       const user = await prisma.user.findFirst(
+               {where:{email}})
   
+ 
+
+  
+if(!user){
+ throw new Error("INVALID_CREDENTIALS");
+
+   }
+
+   
+
+const updatedUser=await prisma.user.update({
+where: {id:user.id},
+ data:{resetToken, resetExpires},
+ })
+try{
+      console.log(`sending otp ${resetToken} to ${email}`);+
+	await publishToQueue("emailQueue",{email, resetToken, userId:user.id})
+
+
+}catch(err){
+console.error("OTP failure:",err);
 await prisma.user.update({
-where: {email},
-data:{resetToken, resetExpires},
-})
-await mailService.SendResetPasswordOTP(email, resetToken);
-return {email,  resetToken};
+where:{id:user.id},
+data:{resetToken:null, resetExpires:null},
+});
+throw new Error("Failed to send OTP") 
 }
-}
-}
+return updatedUser;
+
+}catch(err){
+console.error("Password reset error:",err);
+throw err;
+ }
+ }
+ }
+
 //ANONYMOUS AUTH LOGIC
 export const Incognito = (req:Request, res:Response, next:NextFunction)=>{
 const authHeader = req.headers.authorization;
@@ -172,10 +187,6 @@ return (res as any).status(400).json({error : defaultErrorMessage})
 
 
 
-const passwordService = createPasswordService(prisma, toMail,{
-otpExpirationMinutes: 15,
-otpGenerator: genOTP
-})
 const HandlePasswordError=createPasswordErrorHandler({
 	userNotFoundMessage: "INVALID_CREDENTIALS",
         successMessage:"OTP sent to your email"
@@ -184,20 +195,25 @@ const HandlePasswordError=createPasswordErrorHandler({
 const requestPassword = async (req:Request, res:Response , next:NextFunction)=>{
 const {email} = req.body;
 
-	try{
-		const result = await passwordService.requestPasswordReset(email);
-		return {
-		email:result.email,
-		error:"",
-		success:"Password reset OTP has been sent to your email"
-		};
+if(!email){
+res.status(400).json({
+success:false,
+message:"Email is required"})
+}
 
+	try{
+await createPasswordService.requestPasswordReset({email});
+
+               res.status(200).json({
+               success:true,
+               message:` reset OTP has been sent to ${email}`
+               });
 
 }catch (err){
 	if(err instanceof Error){
-HandlePasswordError(err, res, email);
+return HandlePasswordError(err, res, email);
   }else{
-  HandlePasswordError(new Error (String(err)),res,email)
+  return HandlePasswordError(new Error (String(err)),res,email)
   }
  }
 }
@@ -222,19 +238,26 @@ const errorMessage = err instanceof Error ? err.message : "Unknown error";
     return res.status(400).json({message: errorMessage})
   }
 };
+
+//Update password
 export const UpdatePassword = async(req:Request,res:Response ,next:NextFunction)=>{
-  const {email,password,otp}=req.body;
+  const {email,password}=req.body;
 	const hashed = await bcrypt.hash(password,10)
-  try{
+ 
+	if(!email || !password ){
+  return res.status(400).json({
+  success:false,
+  message:"Email,password are required"})
+  }
+	try{
     const user = await prisma.user.findFirst({
-      where:{
-        email,
-        resetToken:otp,
-        resetExpires:{gt: new Date()}
-      }
+      where:{email}
     })
     if(!user){
-	res.status(400);
+	res.status(400).json({
+        success:false,
+        message:"Huh! you sure your have an account"});
+
 	return;
     }
 
@@ -246,11 +269,18 @@ export const UpdatePassword = async(req:Request,res:Response ,next:NextFunction)
         resetExpires:null
         }
     })
-    res.status(200);
-    return;
+    res.status(200).json({
+    success:true,
+    message:"Success!"})
+ return;
 
   }catch(err){
-    res.status(500);
+   console.error("Password update error:",err)
+
+    res.status(500).json({
+    success:false,
+    message:"Internal server error"});
+
     return;
   }
 };
