@@ -20,7 +20,6 @@ dotenv_1.default.config();
 const jwtAuth_1 = require("../prisma/config/jwtAuth");
 ;
 const toMail = {
-    sendVerificationEmail: email_1.sendVerificationEmail,
     sendWelcomeEmail: email_1.sendWelcomeEmail,
     SendResetPasswordOTP: email_1.SendResetPasswordOTP,
     genOTP: email_1.genOTP

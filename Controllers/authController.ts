@@ -4,8 +4,7 @@ const {PrismaClient} = require ("@prisma/client")
 import{ Request, Response, NextFunction} from "express";
 import { body, validationResult } from 'express-validator';
 import {loginCount, authSuccessCounter, errorCounter} from "../prisma/config/Monitor/monitor"
-import { 
-//sendVerificationEmail, 
+import {  
 sendWelcomeEmail,
 SendResetPasswordOTP,
 genOTP } from "../prisma/config/email";
@@ -49,7 +48,7 @@ interface PasswordResetResult{
 }
 
 interface MailService {
-  sendVerificationEmail(email: string, token: string) : Promise<void>;
+  //sendVerificationEmail(email: string, token: string) : Promise<void>;
   SendResetPasswordOTP(email: string, token: string) : Promise<void>;
   sendWelcomeEmail(userId: string) : Promise<void>;
   genOTP:any;
@@ -95,7 +94,6 @@ interface PasswordResetOptions {
 
 
 const toMail :  MailService={
-sendVerificationEmail,
 sendWelcomeEmail,
 SendResetPasswordOTP,
 genOTP
