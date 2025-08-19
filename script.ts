@@ -29,6 +29,7 @@ import {register,
         vAL,
         requestPassword} from "./Controllers/authController";
 import asyncHandler from "express-async-handler";
+import {PORT} from "./server"
 import router from "./routes/userrouter";
 import cookieParser from "cookie-parser"
 import {initializeRateLimiter,OTPLimiterMiddleware,LoginLimiterMiddleware} from "./prisma/config/OTPlimit";
@@ -147,10 +148,6 @@ app.use((req, res)=>{
 res.status(404).json({error: "Route not found"})
 });
   
-  const PORT =parseInt(process.env.PORT || "5000",10);
-  app.listen(PORT,"0.0.0.0",() =>{
-  console.log("Server running on port 5000")
-  });
 
 
 

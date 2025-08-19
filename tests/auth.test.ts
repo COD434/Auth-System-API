@@ -16,7 +16,7 @@ dotenv.config({
 	override:true
 });
 
-
+//const app = express();
 const expect = chai.expect;
 const newPass = "1234Hunnida@@"
 const testPassword = "1234Hunnids#@";
@@ -45,14 +45,20 @@ console.log("seeding admin...")
 await seedAdmin();
 
 sinon.stub(rabbitmq,"publishToQueue").resolves();
-
 });
 
 after(async()=>{
+
 await redis.quit();
 await prisma.$disconnect();
 sinon.restore();
-});
+setTimeout(() => {
+console.log("Tests completed - forcing exit");
+process.exit(0)
+},2000);
+ });
+
+
 
  async function cleanDatabase() {
     const tablenames = await prisma.$queryRaw<
@@ -91,8 +97,12 @@ email:testEmail
 })
 const verifyOTP= await request(app).post("/verify-reset-otp").send({
 email:testEmail
-//otp:OTP
 })
+const UpdatePass = await request(app).post("/update-password").send({
+email:testEmail,
+password:newPass
+})
+expect(UpdatePass.status).to.equal(200)
 expect(verifyOTP.status).to.equal(200)
 expect(requestPassReset.status).to.equal(200)
 expect(login.status).to.equal(200);

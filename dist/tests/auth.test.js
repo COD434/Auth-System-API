@@ -52,6 +52,7 @@ dotenv_1.default.config({
     path: path_1.default.resolve(process.cwd(), ".env.test"),
     override: true
 });
+//const app = express();
 const expect = chai_1.default.expect;
 const newPass = "1234Hunnida@@";
 const testPassword = "1234Hunnids#@";
@@ -78,6 +79,10 @@ describe("User Auth flow", () => {
         await redis.quit();
         await validate_1.prisma.$disconnect();
         sinon_1.default.restore();
+        setTimeout(() => {
+            console.log("Tests completed - forcing exit");
+            process.exit(0);
+        }, 2000);
     });
     async function cleanDatabase() {
         const tablenames = await validate_1.prisma.$queryRaw `SELECT tablename FROM pg_tables WHERE schemaname='public'`;
@@ -109,8 +114,12 @@ describe("User Auth flow", () => {
         });
         const verifyOTP = await (0, supertest_1.default)(script_1.default).post("/verify-reset-otp").send({
             email: testEmail
-            //otp:OTP
         });
+        const UpdatePass = await (0, supertest_1.default)(script_1.default).post("/update-password").send({
+            email: testEmail,
+            password: newPass
+        });
+        expect(UpdatePass.status).to.equal(200);
         expect(verifyOTP.status).to.equal(200);
         expect(requestPassReset.status).to.equal(200);
         expect(login.status).to.equal(200);
