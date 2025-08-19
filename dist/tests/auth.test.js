@@ -111,11 +111,7 @@ describe("User Auth flow", () => {
             email: testEmail
             //otp:OTP
         });
-        //const passUpdate = await (0, supertest_1.default)(script_1.default).post("/update-password").send({
-            //email: testEmail,
-          //  password: newPass
-        //});
-        //expect(passUpdate.status).to.equal(200);
+       
         expect(verifyOTP.status).to.equal(200);
         expect(requestPassReset.status).to.equal(200);
         expect(login.status).to.equal(200);
