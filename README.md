@@ -21,7 +21,7 @@ A secure, production-ready authentication and rate-limiting API built with Node.
 
  ## Why Use This API?
 
-Modern apps need security, observability, and scalability baked in from day one — this API gives you:
+Modern apps need security, observability, and scalability baked in from day one  this API gives you:
 
 - **Fast setup** for production-ready auth flows
 - **Rate limiting out of the box** for abuse prevention
