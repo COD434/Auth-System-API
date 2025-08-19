@@ -5,7 +5,7 @@ import{ Request, Response, NextFunction} from "express";
 import { body, validationResult } from 'express-validator';
 import {loginCount, authSuccessCounter, errorCounter} from "../prisma/config/Monitor/monitor"
 import { 
-sendVerificationEmail, 
+//sendVerificationEmail, 
 sendWelcomeEmail,
 SendResetPasswordOTP,
 genOTP } from "../prisma/config/email";

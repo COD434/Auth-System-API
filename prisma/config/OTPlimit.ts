@@ -3,7 +3,7 @@ import Redis,{Redis as RedisClient}  from "ioredis"
 import {RateLimiterRedis ,RateLimiterMemory} from "rate-limiter-flexible";
 import {setupRedis} from "./redis"
 import {Request, Response, NextFunction} from "express"
-import {RatelimitsBlocked, RatelimitAllowed} from "./Monitor/monitor"
+ import {RatelimitsBlocked, RatelimitAllowed} from "./Monitor/monitor"
 dotenv.config()
 
 

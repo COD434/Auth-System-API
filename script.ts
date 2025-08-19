@@ -1,4 +1,4 @@
-import {initializeRedisClient} from "./prisma/config/redis"
+ import {initializeRedisClient} from "./prisma/config/redis"
 import {initRabbitMq} from "./prisma/config/Rabbitmq"
 import{loginCount, 
 	errorCounter,

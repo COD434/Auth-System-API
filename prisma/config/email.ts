@@ -1,6 +1,6 @@
 import {PrismaClient} from "@prisma/client";
 import crypto from "crypto"
-import nodemailer from "nodemailer"
+ import nodemailer from "nodemailer"
 import dotenv from "dotenv"
 dotenv.config()
 
