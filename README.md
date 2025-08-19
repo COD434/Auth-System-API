@@ -1,4 +1,4 @@
-![Documents Passing](https://img.shields.io/badge/documents-passing-brightgreen)
+![Documents Passing](https://img.shields.io/badge/documents-passing-brightgreen)  [![CI](https://github.com/COD434/Authenik8/actions/workflows/CI.yml/badge.svg)](https://github.com/COD434/Authenik8/actions/workflows/CI.yml)
 
 # 🔐 Authenik8
 
