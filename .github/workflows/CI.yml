@@ -46,6 +46,10 @@ jobs:
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       RABBITMQ_URL: amqp://localhost
+      JWT_SECRET: "jjjjjjjfdhfsgjdjbczsv#$%$E$EDRTFcghbxdshcc"
+      JWT_REFRESH_SECRET: "hdsfjasdbvbDAFDAG5A5FDGF5D5GFD#$$$#$@#$$edrcfggvhjhjb#@$#$%rytf"
+
+      
 
     steps:
       - name:  Checkout code
