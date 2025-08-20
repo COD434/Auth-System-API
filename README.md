@@ -39,6 +39,19 @@ We performed SQL injection testing using **sqlmap** on `POST /login` with JSON p
 - Conclusion: **No SQL injection vulnerabilities detected** in tested parameters.
 
 📄 [View Full Report](./sqlmap-results.pdf)
+
+### Security Test: `/register`
+
+Performed SQL injection testing with **sqlmap** on JSON parameters (`username`, `email`, `password`).
+
+#### Findings
+- No injectable parameters were detected.
+- Tested techniques included: boolean-based blind, error-based, stacked queries, time-based blind, UNION queries.
+- Server responded with **219x 400 (Bad Request)** during testing, which may indicate strict input validation.
+- **Conclusion:** No SQL injection vulnerabilities found in `/register` route.
+
+📄 [View Full Report](./sqlmap-register-results.pdf)
+
  ---
 
 ## Example Use Case
