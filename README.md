@@ -28,6 +28,18 @@ Modern apps need security, observability, and scalability baked in from day one 
 - **Redis integration** for real-time features and token management
 
 ---
+## Security Testing Results
+
+We performed SQL injection testing using **sqlmap** on `POST /login` with JSON parameters (`username`, `email`, `password`).
+
+### Findings
+- No injectable parameters were found (`username`, `email`, `password` all tested).
+- Various SQL injection techniques were tested: boolean-based blind, error-based, stacked queries, time-based blind, UNION queries.
+- Server returned **429 (Too Many Requests)** ~190 times and **400 (Bad Request)** 9 times during testing, suggesting possible rate limiting and input validation.
+- Conclusion: **No SQL injection vulnerabilities detected** in tested parameters.
+
+📄 [View Full Report](./sqlmap-results.pdf)
+ ---
 
 ## Example Use Case
 
