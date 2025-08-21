@@ -52,6 +52,17 @@ Performed SQL injection testing with **sqlmap** on JSON parameters (`username`, 
 
 📄 [View Full Report](./sqlmap-register-results.pdf)
 
+### Security Test: `/request-password-reset`
+
+Performed SQL injection testing with **sqlmap** on JSON parameter (`email`).
+
+#### Findings
+- No injectable parameters detected.
+- Techniques tested: boolean-based blind, error-based, stacked queries, time-based blind, UNION queries.
+- Server returned **72x 400 (Bad Request)** responses, indicating strict validation or request format enforcement.
+- **Conclusion:** No SQL injection vulnerabilities found in `/request-password-reset` route.
+
+📄 [View Full Report](./sqlmap-request-password-reset-results.pdf)
  ---
 
 ## Example Use Case
