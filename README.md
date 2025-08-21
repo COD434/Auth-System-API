@@ -40,6 +40,17 @@ We performed SQL injection testing using **sqlmap** on `POST /login` with JSON p
 
 📄 [View Full Report](./sqlmap-results.pdf)
 
+#### Security Test: `/verify-reset-otp`
+
+Performed SQL injection testing with **sqlmap** on JSON parameters ( `email`, `otp`).
+
+#### Findings:
+-Both parameters were tested against multiple SQLi techniques (boolean-based, error-based, time-based, stacked queries, UNION).
+-SQLmap reported no injectable parameters.
+-High number of 400 Bad Request errors (144), meaning the app strictly validates request structure (likely your JSON schema validation kicking in).
+-**Conclusion**: No injection vulnerability found on `/verify-reset-otp`.
+:[View Full Report](./verify-reset-otp)
+
 ### Security Test: `/register`
 
 Performed SQL injection testing with **sqlmap** on JSON parameters (`username`, `email`, `password`).
