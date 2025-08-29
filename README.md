@@ -43,12 +43,12 @@ You're building a SaaS app in **React**. Instead of building login, auth, and ra
 - All protected routes use `Authorization: Bearer <token>`
 
 Installation
-
+```
 git clone https://github.com/COD434/Authenik8 <br>
 cd Authenik8<br>
 cp .env<br>
 docker-compose up --build
-
+```
 🤝 Contributing
 
 Pull requests and discussions welcome! Please open an issue first to discuss major changes.
